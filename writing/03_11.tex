@@ -1,0 +1,204 @@
+
+% S510/S520 Master Seminar Thesis Template (LaTeX)
+% Based on the formal guidelines: 12pt font, justified text, 1.5 line spacing,
+% Roman numerals for preliminaries, Arabic numerals for main content, figures/tables in main text.
+% Replace placeholders and start writing where indicated.
+\documentclass[12pt,a4paper]{article}
+
+% ---------- Packages & basic formatting ----------
+\usepackage[a4paper,margin=2.5cm]{geometry}   % sensible margins for A4
+\usepackage{setspace}                         % for 1.5 spacing
+\onehalfspacing
+\usepackage{microtype}                        % better justification/kerning
+\usepackage[english]{babel}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{graphicx}
+\usepackage{float}                            % to place figures/tables "here" if needed
+\usepackage{booktabs}                         % nicer tables
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{csquotes}                         % recommended with biblatex
+\usepackage[backend=biber,style=authoryear,doi=false,isbn=false,url=true,maxcitenames=2,maxbibnames=99]{biblatex}
+\addbibresource{referencen.bib}
+
+
+% Hyperlinks last
+\usepackage[hidelinks]{hyperref}
+\hypersetup{
+  pdftitle={Seminar Thesis Title},
+  pdfauthor={Your Name},
+  pdfsubject={S510/S520 – Master Seminar on Econometrics},
+  pdfcreator={LaTeX}
+}
+
+% ---------- Title page ----------
+\newcommand{\university}{Eberhard Karls Universität Tübingen}
+\newcommand{\faculty}{Faculty of Economics and Social Sciences}
+\newcommand{\seminar}{S510/S520 – Master Seminar on Econometrics}
+\newcommand{\chairA}{Chair of Statistics, Econometrics and Quantitative Methods}
+\newcommand{\chairB}{Chair of Statistics, Econometrics and Empirical Economics}
+\newcommand{\supervisor}{Alexander Reining}
+\newcommand{\authorname}{Alexander Unger}
+\newcommand{\matricno}{6946672}
+\newcommand{\emailaddr}{youremail@stud.uni-tuebingen.de}
+\newcommand{\thesistitle}{Google Search Indicators and Nowcasting German
+Unemployment: Early vs. Late Information}
+\newcommand{\submissiondate}{January 9, 2026}
+
+\begin{document}
+\begin{titlepage}
+  \centering
+  {\large \university \par}
+  \vspace{2mm}
+  {\large \faculty \par}
+  \vspace{18mm}
+  {\large \chairA\\[2mm]\chairB\par}
+  \vspace{18mm}
+  {\Large \textbf{\seminar}\par}
+  \vspace{18mm}
+  {\LARGE \textbf{\thesistitle}\par}
+  \vspace{18mm}
+  \begin{tabular}{ll}
+    Author:      & \authorname \\
+    Matriculation No.: & \matricno \\
+    E-mail:      & \emailaddr \\
+    Supervisor:  & \supervisor \\
+    Submission date: & \submissiondate \\
+  \end{tabular}
+  \vfill
+\end{titlepage}
+
+% ---------- Preliminaries (Roman page numbers) ----------
+\pagenumbering{Roman}
+
+% Optional: Abstract
+\section*{Abstract}
+This paper builds on Zimmerman’s approach to evaluate whether biweekly Google search indicators can improve one-step-ahead nowcasts of German unemployment. Weekly search series from Indeed, Stepstone, Jobbörse, Arbeitsamt, and Bewerbung are combined into consistent 2011–2023 histories and aggregated into biweekly components reflecting the W34 (M1) and W12 (M) schemes, in line with Zimmerman’s framework. In contrast to the original approach, several pre-tests are conducted, including the Augmented Dickey–Fuller and Engle–Granger cointegration tests. Trend indicators are then modeled within an error-correction framework. 
+Finally, early versus late nowcasts are compared, and predictive gains are assessed using out-of-sample RMSE, MAE, and Diebold–Mariano tests. 
+The analysis compares both window specifications to identify which provides more informative signals for real-time labor market assessment.
+
+
+
+\newpage
+\tableofcontents
+\newpage
+\listoffigures % remove if you have no figures
+\newpage
+\listoftables  % remove if you have no tables
+\newpage
+
+% ---------- Main matter (Arabic page numbers) ----------
+\pagenumbering{arabic}
+
+% ---------- Introduction ----------
+\section{Introduction}
+Central banks, research institutions, and economic policymakers rely on timely indicators to monitor macroeconomic conditions and to evaluate the stance of fiscal and monetary policy.
+However, many key statistics like unemployment figures, industrial production, consumer spending, or even inflation, are released only with a considerable delay after the reference period.
+These publication lags create information gaps precisely when rapid responses are most needed, for instance during economic crises, sudden demand shocks, or turning points in the business cycle.
+Here especially the COVID-19 pandemic and the 2008 financial crisis vividly illustrated how delayed labor and consumption statistics hindered timely policy interventions.\\
+Timely knowledge of labor market developments, household consumption patterns, and business sentiment is therefore crucial for authorities to anticipate economic shifts rather than react to them ex post.
+Nevertheless, conventional data collection processes based on surveys and administrative records, are inherently slow and mostly resource-intensive.
+The result is that official indicators often arrive too late to capture the real time economic movements.
+\\
+Within this context researchers and institutions more and more explore the potential of alternative,
+high freuqency data sources that can complement traditional statistics and enhance short-term forecasting.
+Examples of these sources entail digital traces from online job postings, search engine activity, mobility data, or credit card transactions.
+Each of those reflects economic behaviour and expectations in real time.
+\\
+In this growing field of new data that is emerging from web engines google search data clearly stand out as it is publicly accesible, high-frequency, and behaviorally interpretable.
+There changes in search intensity for specific keywords like “jobs,” “application,” or “recession” can reveal shifts in labor market sentiment or employment expectations well before these transitions become visible in official statistics.
+\\
+Against this background, an emerging strand of researches in the early 2000 started to explore if online behaviour can actually serve as an signal of macroeconmic developments.
+Here the underlying idea is straightforward. People individual search activities often precede the real ecnomic decissions. 
+As when people start becoming concered about job security or start seeking new employment, they increase their online searches for such terms like "jobs" or "application". Similarly also searches for "recession" or inflation may signal changes in economic economic sentiment before these trends become visible in traditional statistics.
+These online search patterns represent “micro-level behavioral data” that aggregates across millions of users, form a high-frequency proxy for macroeconomic dynamics. In this sense search activity can be viewed as a digital thermometer of the economy, translating intentions and expectations into measurable signals.
+Google trends here offer a practical implementation of this concept. It search volume indices porvide a publicly accessible, high frequency time series that capture shifts in the information-seeking behavior of individuals, households and firms.
+In contrast to traditional forecasting approaches that aim to predict future developments, nowcasting uses real time information to infer the current state of the economy and hence predicting the present.
+As such, Google search data data have the potential to enhance the timeliness and responsiveness of economic analysis, particularly for indicators subject to publication delays such as unemployment.
+\\
+Over the past decade, a growing body of research has explored whether Google search data can enhance the timeliness and accuracy of economic forecasts.
+Here the pioneering work by \textcite{Askitas2009} shows one of the first attempts to quantify the informational content of Google search data for macroeconomic forecasting.
+The authors introduced the concept. of a Google predictor, demonstrating that keyword search volumes can anticipate changes in unemployment rates.
+Using the data between 2004 and 2009 they find significant correlations between the frequency of job-related search terms and subsequent unemployment figures published by the Federal Employment Agency.
+In their results which are based on an ECM they showcase how search activity in latter weeks of a month could reliably predict official unemployment data released weeks later.
+Especially they underline that online search behavior often precedes observable labor market movements, which suggests that such digital traces serve as high-frequency indicators of economic sentiment and job market dynamics.\\
+Building on this \textcite{varian} extended the use of Google search data to a broader range of macroeconomic indicators.
+They demonstrated that search query volumes can provide real-time signals for various economic activities such as automobile sales, unemployment claims, travel demand, and consumer confidence.
+In their approach rather then focuss on an traditional forecasting approach they looked at nowcasting and hence that is, estimating economic indicators that are observed with publication lags by using contemporaneous search data.
+Employing autoregressive models bundled with Google Trends indices, they found that including search terms such as “unemployment benefits” or “car sales” improved out-of-sample forecast, particularly around turning points in the business cycle.
+Their work established Google Trends as a valuable and publicly accessible data source for nowcasting, laying the foundation for numerous subsequent applications across labor markets.
+
+
+\newpage
+% If citing a book with pages: \parencite[p.~80]{greene2000}.
+
+% ---------- Theory / Methods ----------
+\section{Econometric and Economic Framework}
+% Present the theoretical background and econometric methods.
+% Derivations can be sketched here; long proofs may go to the Appendix.
+
+\subsection{Model}
+% Specify the model(s) you estimate.
+
+\subsection{Estimation and Inference}
+% Explain estimation strategy, assumptions, identification, and inference procedures.
+
+% ---------- Data ----------
+\section{Data}
+% Describe data sources, construction of variables, sample selection and summary statistics.
+% Include well-labeled tables and figures where appropriate.
+\begin{table}[H]
+  \centering
+  \caption{Summary statistics}
+  \label{tab:summary}
+  \begin{tabular}{lrrrr}
+    \toprule
+    Variable & Mean & SD & Min & Max \\
+    \midrule
+    % Fill in
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+% ---------- Empirical Results / Application ----------
+\section{Application and Results}
+% Present the empirical application, main results, and robustness checks.
+% Place figures/tables near where they are discussed.
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=.85\linewidth]{figures/placeholder.pdf}
+  \caption{Descriptive or results figure (replace with your graphic).}
+  \label{fig:results}
+\end{figure}
+
+\subsection{Robustness and Sensitivity}
+% Robustness checks, alternative specifications, diagnostic tests.
+
+% ---------- Conclusion ----------
+\section{Conclusion}
+% Summarize results critically, discuss limitations and implications, and conclude.
+
+% ---------- References ----------
+\printbibliography
+
+% ---------- Appendix (not counted toward 20-page text limit; keep reasonable) ----------
+\appendix
+\section{Additional Material}
+% Mathematical derivations, additional tables/figures, detailed robustness, code listings (if needed).
+
+% ---------- Notes for the author (remove before submission) ----------
+% Formatting checklist aligned with the seminar's guidelines:
+% - Max 20 pages of text for the main body (formulas/graphs/figures don't count as text; appendix excluded).
+% - Font size 12pt, justified alignment (default), line spacing 1.5.
+% - Use Roman numerals for preliminaries (ToC, lists), Arabic for content.
+% - Figures/tables are placed within the relevant parts in the main text.
+% - Avoid direct quotes; argue in economic terms rather than only with symbols.
+% - Upload PDF plus all replication files/code on submission.
+% Quoting examples (for reference):
+%  - "... durations ..." \parencite{engle2002}
+%  - \textcite{engle2002} show that ...
+%  - Book with page: \parencite[p.~80]{greene2000}
+
+\end{document}

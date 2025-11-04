@@ -1,0 +1,227 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{hyperref}
+\usepackage{geometry}
+\geometry{
+ a4paper,
+ margin=1in,
+}
+\begin{document}
+
+
+\section{Introduction}
+
+The increasing availability of high-frequency digital data provides new opportunities for improving macroeconomic forecasts. In particular, search query data from Google can serve as real-time indicators of economic activity. This idea was first explored by \citet{DamuriMarcucci2009}, who proposed a simple yet powerful approach to forecasting the U.S. unemployment rate using a Google job-search index.
+
+Their central question is whether online job search intensity can act as a leading indicator of unemployment dynamics. The authors test this by augmenting standard autoregressive models with a Google Index (GI) capturing the relative frequency of searches for the term ``jobs''. 
+
+Using an extensive out-of-sample forecast comparison across more than 500 models, they find that specifications including the GI outperform traditional benchmarks, such as models based solely on autoregressive components or initial unemployment claims. The improvement is economically and statistically significant, with mean squared forecast errors reduced by roughly 30–40\% for horizons up to three months. 
+
+These findings suggest that digital data can provide timely information about labor market conditions and offer a foundation for further research on mixed-frequency nowcasting approaches. This paper follows their methodology to apply the same concept to German unemployment data, with the aim of understanding the predictive usefulness of Google search behavior in a European context.
+
+\section{Data}
+
+This study follows the data design of \citet{DamuriMarcucci2009}, who forecasted the U.S. unemployment rate using both traditional and internet-based indicators. The dependent variable is the monthly seasonally adjusted unemployment rate, obtained from the Federal Employment Agency (\emph{Bundesagentur für Arbeit}) and Eurostat for Germany.
+
+The main explanatory variable is a Google search index reflecting job-search activity. Following the original paper, the index measures the relative frequency of searches for the term ``jobs'' (and related German keywords such as ``Stellenangebote'' or ``Arbeitsamt'') obtained from Google Trends. The data are available weekly from January 2004 onward and are normalized to a 0–100 scale.
+
+To align the weekly Google data with monthly unemployment statistics, the monthly index is constructed by averaging the four weekly values up to and including the week containing the 12th day of each month, consistent with the official definition of the reference period for unemployment measurement. 
+
+In addition to the Google Index, the authors originally included the U.S. Initial Jobless Claims series as a benchmark leading indicator. As a comparable series for Germany is not directly available, this study focuses primarily on the Google-based indicator.
+
+All variables are seasonally adjusted using the TRAMO-SEATS procedure. Standard unit root tests (ADF and ADF-GLS) are applied to assess stationarity, and both levels and first differences of the unemployment rate are considered in the forecasting analysis.
+\\
+\textbf{Important limitations they note}:
+\begin{itemize}
+    \item Bias: Not all people searching for “jobs” are unemployed (on-the-job searchers distort it).
+    \item Sample limitation: Only from 2004 onward (short sample).
+    \item Scaling issues: Google Trends data are relative, not absolute (0–100 scale).
+    \item Language/word ambiguity: “jobs” may capture general interest, not always job search.
+\end{itemize}
+\\
+\textbf{Important descriptive findings}:
+The GI and IC both move closely with unemployment. Both are leading indicators — GI even slightly leads more. Correlations between GI and unemployment  0.85–0.90. Correlations with changes in unemployment  0.70+, even higher than IC.
+
+\subsection{IC}
+Initial jobless claims: When people lose their job, they can apply for unemployment benefits. The number of those new applications is called Initial Claims (IC). It’s released every Thursday and is one of the fastest available indicators of labor market conditions.
+\textbf{Why do they need to align IC(weekly) and GI(weekly) with unemployment(monthly)}
+Problem they have here : You can’t just directly regress weekly IC and GI on monthly unemployment — you need them to “speak the same time language.” So they convert both weekly series into monthly averages that match how the unemployment rate itself is defined.
+
+\subsection{How is the unemployment measured}
+For each month t unemployment is measured for the week containing the 12th day of that month.
+And a person counts as unemployed if they looked for work in the four weeks before that survey week.
+\\
+\textbf{How they then calculate the monthly GI index}
+Let’s say we’re calculating the monthly Google Index for January 2009. The unemployment survey week week containing Jan 12, 2009 (that’s week 3 of 2009). So they take the 4 most recent weeks,  Week 52 of 2008 (Dec 21–27, 2008), Week 1 of 2009 (Dec 28–Jan 3), Week 2 of 2009 (Jan 4–10), Week 3 of 2009 (Jan 11–17).
+Then they average this by 4 and this will then be used as the GI value for january alongside the january 2009 unemployment rate. 
+
+
+\section{Methodology}
+
+Following \citet{DamuriMarcucci2009}, the empirical strategy is based on autoregressive forecasting models of the unemployment rate, augmented with additional explanatory variables. The general specification is given by:
+
+\begin{equation}
+u_t = \alpha + \sum_{i=1}^{p} \phi_i u_{t-i} + \sum_{j=0}^{q} \beta_j X_{t-j} + \varepsilon_t,
+\end{equation}
+
+where $u_t$ denotes the seasonally adjusted unemployment rate, and $X_t$ represents a potential leading indicator, such as Initial Jobless Claims (IC) or the Google job-search index (GI). The parameters $\phi_i$ and $\beta_j$ capture, respectively, the persistence in unemployment and the contemporaneous and lagged effects of the external variables.
+
+To evaluate the predictive usefulness of the Google-based indicator, several model variants are estimated:
+\begin{align}
+u_t &= \alpha + \sum_{i=1}^{p} \phi_i u_{t-i} + \varepsilon_t, \\
+u_t &= \alpha + \sum_{i=1}^{p} \phi_i u_{t-i} + \sum_{j=0}^{q} \beta_j IC_{t-j} + \varepsilon_t, \\
+u_t &= \alpha + \sum_{i=1}^{p} \phi_i u_{t-i} + \sum_{j=0}^{q} \gamma_j GI_{t-j} + \varepsilon_t.
+\end{align}
+
+Each model is estimated by ordinary least squares using rolling windows to produce one-, three-, and six-month-ahead forecasts. Forecast accuracy is assessed using mean squared forecast errors (MSFE) and Diebold–Mariano tests. The comparison of these models allows assessing whether the inclusion of Google search data improves unemployment forecasts relative to traditional autoregressive or claims-based benchmarks.
+
+
+\subsection{Their modle approach}
+in a standard ARMAX model (like D’Amuri \& Marcucci used), you cannot directly mix weekly and monthly data in the same regression equation unless you first aggregate or transform them to a common frequency. The lags of GI or
+IC in their regression are the past months’ averages of those weekly values — not the raw weekly data.
+\\
+\textbf{Their week inside month trick}
+They take the four weekly values within a month (for example, weeks 1–4 of January)
+and treat them as separate regressors in a model that is still estimated at the monthly level.
+So they’re not mixing frequencies in the time dimension (everything is still monthly),
+but they are “unpacking” each month into four sub-observations that correspond to the within-month pattern.
+
+\section{Forecast}
+They run pseudo-out-of-sample forecasts — that means they pretend to be in real time and predict the future.
+If you have the unemployment rate at month t, the one step ahead forecast would be in this case to forecast the next month.
+There are multiple horizons: 1-month ahead → nowcasting (“what’s happening right now?”).
+2- or 3-month ahead → short-term forecasting (planning, expectations).
+\subsection{The one step ahead forecast in practice}
+To assess the predictive value of Google search data for unemployment forecasting, a pseudo--out-of-sample forecasting framework is implemented, following \citet{DamuriMarcucci2009}. 
+At each forecast origin, models are estimated using only information available at that time, and forecasts are generated for horizons of one, two, and three months ahead. 
+This setup mimics the conditions faced by real-time forecasters, who must predict unemployment before official data are released.
+
+Formally, for each month $t$, the model estimated on data up to $t$ produces an $h$-step-ahead forecast $\hat{u}_{t+h|t}$ for $h = 1, 2, 3$. 
+The forecast error is defined as:
+\begin{equation}
+e_{t+h|t} = u_{t+h} - \hat{u}_{t+h|t}.
+\end{equation}
+
+Models are re-estimated recursively, expanding the estimation window as new data become available. 
+This recursive scheme ensures that forecasts are always based on the information set that would have been available in real time.
+
+\subsection{How they compare}
+Long-sample models (without GI): trained from 1967:1–2007:2. Short-sample models (with GI): trained only from 2004:1–2007:2 because Google data start in 2004. Then they evaluate both on the same out-of-sample forecast period (2007:3–2009:6). So, yes — these models are trained on different estimation windows, but tested on the same forecast window.The logic is tied to forecasting realism and out-of-sample validation. When you do forecasting research, what matters is how well a model predicts the future, not how long its training history is. So both models are being judged on the same predictive challenge: “Given what was known by mid-2007, which model forecasts unemployment better in 2007–2009?” In 2007–2009 (financial crisis, structural break), the long-sample models use patterns from the 1970s–1990s that may no longer be relevant. The short-sample models with Google data are more adaptive — even if they use less data — and capture recent labor market behavior. “Does adding real-time digital data compensate for having less historical data?” And the answer they find is yes — it does.
+
+
+\subsection{Forecast Accuracy Measures}
+
+Forecast accuracy is assessed using the Mean Squared Forecast Error (MSFE):
+\begin{equation}
+MSFE = \frac{1}{T} \sum_{t=1}^{T} (e_{t+h|t})^2,
+\end{equation}
+where a lower MSFE indicates better predictive performance.
+
+To formally test for significant differences in predictive accuracy between models, we employ the Diebold and Mariano (DM, 1995) test. 
+Under the null hypothesis of equal forecast accuracy, the mean loss differential is zero:
+\begin{equation}
+H_0: E(d_t) = 0, \quad \text{where} \quad d_t = e_{1,t}^2 - e_{2,t}^2.
+\end{equation}
+A rejection of $H_0$ implies that the model with the lower MSFE provides statistically superior forecasts. 
+
+Additionally, the Harvey, Leybourne, and Newbold (HLN, 1998) test is used to assess \emph{forecast encompassing}---that is, whether one model’s forecasts contain all relevant predictive information from another. 
+Following the original study, both tests are performed in their two-sided versions to allow for comparison across both nested and non-nested models.
+
+To address potential data-snooping issues arising from the large number of competing specifications, we also refer to White’s (2000) \emph{Reality Check} (RC) test, which evaluates the null hypothesis that no alternative model has superior predictive ability relative to the benchmark model. 
+This provides a conservative multiple-model adjustment, ensuring that any reported gains are not due to overfitting.
+
+\subsection{Results Summary}
+
+Across all forecast horizons, models including the Google Index (GI) consistently outperform traditional autoregressive benchmarks. 
+In the U.S. study of \citet{DamuriMarcucci2009}, the best-performing specification is a simple AR(1) model augmented with the monthly average GI, denoted ARX(1)--$G_t$, which yields the lowest MSFE for one- and two-month-ahead forecasts. 
+For three-month-ahead forecasts, an ARMA(1,1) model with the GI and a seasonal multiplicative factor (ARMAX(1,1)--$G_t$--SA) performs best.
+
+Importantly, the top fifteen models in their forecasting horse-race all include the GI as an explanatory variable. 
+Models without the GI, even when estimated on the much longer historical sample (1967:1–2007:2), rank substantially worse---73rd for one-month-ahead and beyond 170th for longer horizons. 
+This highlights the incremental value of incorporating real-time search data into forecasting frameworks.
+
+Formal statistical tests confirm these findings. 
+For one- and two-month-ahead horizons, both the DM and HLN tests reject the null of equal forecast accuracy at the 10\% level, indicating that GI-augmented models produce significantly better forecasts. 
+The Reality Check test further validates the robustness of these results by failing to identify any competing model with superior predictive ability once multiple comparisons are accounted for.
+
+\subsection{Interpretation}
+
+The strong performance of the Google-based indicators suggests that online job search intensity serves as a timely leading signal of labor market conditions. 
+Individuals typically begin searching for employment before they officially enter unemployment statistics, allowing the Google Index to capture early movements that traditional indicators, such as initial jobless claims, detect with a lag.
+
+These results are particularly relevant for real-time economic monitoring and nowcasting applications. 
+The short data history (2004–2009) limits the original sample size, yet the substantial reduction in forecast errors---approximately 30–40\% for short horizons---demonstrates that digital activity data can provide valuable predictive content beyond conventional economic time series.
+
+In the subsequent German replication, similar forecasting experiments will be conducted to assess whether search intensity for terms such as ``Jobs'' or ``Stellenangebote'' can provide comparable short-term predictive gains for the German labor market.
+
+\section{Stationarity of the independent variable}
+\subsection{The dependent varible}
+“We compare a total of 520 linear ARMA models for the variable the first differences of the U.S. unemployment rate…” This mean all lagged terms on the left-hand side are also differences (if AR terms exist).
+This is standard — it removes the unit root and makes the ut stationary. So the dependent variable is stationary.
+
+\subsection{The independent variables}
+They include levels of IC and GI (and possibly their lags) directly — not differenced.
+You can see it in their notation:
+We then estimate the same models for the short sample using the monthly average of the GI (Gt), its weekly values (Gw1,t, Gw2,t, Gw3,t, Gw4,t) and their lags up to the second.
+So yes, they plug the levels of GI and IC directly into a model whose dependent variable is.
+That might sound strange at first, but it’s actually econometrically valid in this context — here’s why.
+
+\subsection{Validity}
+\textbf{Rule 1: If dependent variable is stationary → regressors must not cause nonstationary residuals.}
+IC is a flow variable (weekly/monthly number of new claims). It typically fluctuates around a mean — stationary after seasonal adjustment. “All series are seasonally adjusted.” So IC is already stationary (I(0)).
+
+\textbf{GI}
+GI is bounded between 0 and 100, and shows weekly fluctuations — not a random walk.
+Google Trends data are normalized per time window, so they don’t have unit roots in the same sense as price or GDP series.
+When you test them (ADF, KPSS), they typically come out stationary as well.
+All variables are stationary, so it’s safe to estimate by OLS.
+No spurious regression problem.
+
+
+\textbf{Cointegration}
+If GI or IC were nonstationary (I(1)) and not cointegrated with unemployment,
+you would get spurious regression — inflated t-stats, misleading significance. But because both IC and GI are stationary after seasonal adjustment (and bounded in range), the condition holds.
+\textbf{Why not differenceing GI}: That would destroy the signal — these are already high-frequency, stationary, bounded indice
+
+
+\section{Zimmerman google trends}
+
+\subsection{Problems that google trends bring}
+Unemployment data is organized in biweekly periods, e.g. W34M 1 (weeks 3–4 of month M−1). W12M (weeks 1–2 of month M).
+Google search data, however, comes in calendar weeks (Monday–Sunday), which don’t line up, neatly with the 1st/2nd/3rd/4th weeks of a month. So when they want to compute, say, “Google activity in the 3rd and 4th week of month M−1,” the Google weeks don’t perfectly overlap those intervals.
+To make the time periods comparable, they have to manually resplit or reweight the Google weekly data to fit their “biweekly unemployment” windows.
+Google’s week 1 = Jan 29–Feb 4 But your “month M” starts on Feb 1.
+Then one Google week covers part of January and part of February.
+
+\textbf{Solution}
+They realized that using weekly intervals would make these misalignments much worse — small timing errors would have a big effect when comparing week-to-week. So they decided to aggregate to two-week (biweekly) intervals, which: smooths out random noise, reduces the impact of boundary mismatches, and gives more stable signals.
+What they do is simply take week 1 and week2 and build compute the average of both. The same is done for week3 and week4 and then build the average. Random ups and downs (like one week being unusually high or low) smooth out.
+
+\subsection{Another problem}
+They’re saying: “We think that people’s Google searches right before the unemployment number is announced (end of month M−1) give us a clearer picture of real economic activity than searches after the announcement — because after the announcement, people might just be reacting to the news, not to their personal job situation.”
+
+\section{Empirical framework}
+They want to test if Google search activity (like searches for “unemployment office”, “job application”, etc.) can help predict actual economic behavior — specifically, unemployment in Germany.
+\subsection{The error correction model}
+The ECM (Engle & Granger, 1987) is a type of time series model used when two variables are linked in the long run but may deviate temporarily.
+Short-run dynamics (how one variable responds to recent changes in another), and
+Long-run equilibrium (how they move together over time).
+If Google searches and unemployment are connected in the long run, but not perfectly at each moment, an ECM can model both the long-term relationship and short-term adjustments.
+
+\subsection{How do they excel seasonality}
+This is clever: unemployment has strong seasonal patterns (e.g., always higher in winter, lower in summer).
+If you don’t correct for that, you’ll misinterpret normal seasonal ups and downs as real effects.
+To remove seasonality, they define “change” using a 12-month lag operator — meaning they compare each month to the same month one year earlier.
+So they’re not comparing “February vs. January”, but “February 2009 vs. February 2008”.
+That way, any recurring seasonal patterns (e.g. Christmas layoffs) cancel out. With this advantage they dont have to model seasonality directly. 
+They have 5 year of data which is approximately 60 months. 
+
+\subsection{What does the error correction model do}
+It models how to variables move together in the long run but might deviate from eachother in the short run. 
+It’s called “error correction” because it includes a term that measures how far the relationship has drifted from its long-run equilibrium.
+
+
+
+\end{document}

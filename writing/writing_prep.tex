@@ -1,0 +1,100 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{hyperref}
+\usepackage{geometry}
+\geometry{
+ a4paper,
+ margin=1in,
+}
+\begin{document}
+
+
+\section{Datengewinnung}
+\subsection{Bundesagentur der arbeit}
+The Bundesagentur für Arbeit publishes the registered unemployment rate (“registrierte Arbeitslosigkeit”) at the end of each month M.
+According to BA methodology, the rate for month M is based on administrative records covering the period from the mid point of month M−1 to the mid-point of month M (“Stichtag in der Monatsmitte”).
+In contrast, the Destatis ILO-style unemployment rate refers to the full calendar month and is released later.
+Consequently, following Askitas & Zimmermann (2009), Google Trends indicators are aggregated over weeks 3–4 of M−1 and weeks 1–2 of M to align with the BA’s measurement window. \url{https://statistik.arbeitsagentur.de/Statistikdaten/Detail/202506/arbeitsmarktberichte/monatsbericht-monatsbericht/monatsbericht-d-0-202506-pdf.pdf?__blob=publicationFile}.
+\\
+The BA’s “registered” unemployment (your dataset) only covers up to the mid-month cutoff.
+The Destatis ILO measure spans the whole calendar month.
+
+\subsection{Stichtag}
+the Stichtag (reference day) is not perfectly constant at the 15th.
+The Bundesagentur für Arbeit defines it methodologically as “the 15th (or preceding working day),”
+but in practice, it fluctuates slightly — typically between the 11th and the 16th of each month.
+That variation happens because if the 15th falls on a weekend or holiday, BA shifts to the nearest earlier workday, so the effective cutoff moves a few days.
+\textbf{The researchers}: They were fully aware of this, but for analytical simplicity, they approximated the Stichtag as “mid-month”, not as an exact date. They claimed : The unemployment rate for month M is based on administrative data between the middle of month M−1 and the middle of month M. They onliy take a window : only the window logic
+→ Weeks 3–4 of M−1 + Weeks 1–2 of M.
+The Bundesagentur für Arbeit defines the reference day (‘Stichtag’) as the 15th of each month or the preceding working day (see BA publication calendar). The actual dates vary slightly between the 11th and 16th, but for consistency we approximate the mid-month cutoff.
+
+\subsection{Which variable to use}
+Arbeitslosenquote bezogen auf alle zivilen Erwerbspersonen in Deutschland.
+That’s the registered unemployment rate (non-seasonally adjusted) for the entire country  the series Askitas \& Zimmermann used in their 2009 paper. They even mention that this measure became the BA’s standard indicator after the mid-1990s, replacing the dependent-only rate.
+
+\section{Which data is to consider for my analysis}
+
+\subsection{What did Askitas \& Zimmermann (2009) used}
+\textbf{Period Jan 2004 – Apr 2009}, Google Trends only existed from 2004 onwards.
+They used the weekly “Jobsuche”-type search terms available back then.
+Google normalized data differently before 2009, so they fixed that window for stability.
+That gave them ~270 weekly observations (~5 years) → long enough for cointegration tests.
+
+\section{Google trends}
+
+\subsection{What do you get}
+Returns weekly normalized values (0–100) for keyword search intensity. Each keyword’s data are scaled so that 100 = peak search interest in the selected time window. \textbf{Problem here}: I have to test, if you extend it to a timezone of more then 5 years you have a scaling problem as they scale the trends in each of the windows differently. The normalization threshold (“sufficient volume”) is unknown → hence their caution.
+They basically dont jnow two things:
+\begin{itemize}
+    \item How much must a word be looked for to appear in this normlaized frame
+    \item How did they normalize, which amount of searches leaded to the number 100 for instance
+\end{itemize}
+
+\subsection{Google variable created}
+They call this the “Google activity” along keyword k and denote it $g_{k,12,M}$ and $g_{k,34,M}$.
+The definitions here correspond
+\begin{itemize}
+    \item Google search intensity in weeks 1–2 of month M: $g_{k,12,M}$
+    \item  Google search intensity in weeks 3–4 of month M: 
+    $g_{k,34,M}$
+\end{itemize}
+
+\subsection{Intervall splitting}
+Important they use  biweekly rather than weekly
+time intervals to minimize the noise.
+With that they can figure out whetehr the search activity in the last two weeks of the prior month or the  two weeks of the current month added more to the prediction. 
+\textbf{Why they do that and it is interesting:}
+The 2 weeks before month t is before the announcement, more likely to capture true unemployment developments. The two weeks after the announcement of the prior arbeitslosenquote:  may include reaction to the announcement (people see news, start searching “Arbeitslosenquote”).
+Thus they tested which interval had stronger predictive power.
+
+\subsection{The words they used and why}
+\begin{itemize}
+    \item Arbeitsamt OR Arbeitsagentur: Direct job center contact → flow into unemployment
+    \item Arbeitslosenquote : Public attention to unemployment figures (media, policy)
+    \item Personalberater or Personalberatung: White-collar layoffs / corporate HR adjustment
+    \item Jobbörse: Job-search activity (outflows from unemployment)
+\end{itemize}
+Do I need to check correlations. And important that the values in the time frames are not comparable, 100 in one are not 100 in another.
+Mention the pity of only 5 year limitted time frames
+
+\subsection{How to splitt them}
+We needed to re-split the activity proportionally to overcome the issue that week boundaries do not coincide with our time intervals. We are aware this introduces noise. This is the reason why we decided to use biweekly rather than weekly intervals — to minimize that noise.
+\textbf{What deos this mean}: A Google week might start mid-month.
+So they proportionally split overlapping weeks to get half-month measures.
+Using two-week intervals smooths that noise without losing too much temporal resolution.
+
+\subsection{Splitting}
+\textbf{Important note}: Google trends are not seasonally adjusted. Each series is relative, not absolute. They already control for total Google search volume that week (so not distorted by more people using Google), But seasonal patterns (e.g., fewer searches during Christmas) are still present.
+For seasonal adjustment therefore:  Include seasonal dummy variables, or Apply a seasonal adjustment filter (e.g., X-13-ARIMA, STL, etc.) later.
+\\
+\textbf{What did Zimmer do}: Google returns the data in weekly values ... We needed to re-split the activity proportionally … We are aware that this introduces a certain amount of noise … This is the reason why we decided to use biweekly rather than weekly intervals to minimize the noise.
+So : In their paper, they do not seasonally adjust the Google Trends data either. They directly use the normalized, raw (weekly → biweekly) values.
+both variables are non-seasonally adjusted, but because they model short intervals and differences, the implicit seasonal effects often cancel out.
+
+
+
+
+
+\end{document}

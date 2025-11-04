@@ -1,0 +1,297 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{float}
+\usepackage{booktabs}
+\geometry{
+ a4paper,
+ margin=1in,
+}
+\begin{document}
+\section{Relevant papers entail:}
+\textbf{Use google trends data for nowcasting:}
+Traditional unemployment statistics are published with delay and may not capture rapid structural changes. Google trends behaviour updates in real time and may reveal things such as job-search earlier and therefore offer a glimpse into current economy.
+\section{Google Econometrics and Unemployment Forecasting; Nikolaos Askitas,
+Klaus F. Zimmermann}
+
+\subsection{Their idea}
+They propose a “Google predictor” which is a set of search-based indicators and test whether these time series can forecast or are cointegrated with unemployment.
+This was one of the earliest empirical demonstrations that internet search data can carry macroeconomic information.
+
+\subsection{Their variables}
+heir dependent variable is the monthly unemployment rate published by the Federal Employment Agency (Bundesagentur für Arbeit).
+\textbf{Important}: The agency announces the unemployment rate for month M at the end of month M. However, that rate is based on administrative data collected from the middle of the previous month to the middle of the current month.
+Actaully if you wanna predict the unemployment of month m we can only use data that was available before the announcement date like the one in week 3 or 4 of month m-1.
+\textbf{The independent variable:} The Google Trends data is weekly and normalized within each query (0–100 scale).
+Their “theoretical” biweekly periods (weeks 3–4 and 1–2) don’t align perfectly with Google’s fixed week boundaries.
+So they split and interpolate the weekly Google data proportionally to fit these biweekly intervals. This rescaling introduces noise though.
+
+\subsection{Nonstationarity}
+They check to see whether one variable moves with the other. But unemployment is non stationary (trends and seasonal patterns) levells that change over time.
+Google trends as well is non-stationary. If they would regress one on the other they would get a spurious regression with significant effects even though both just trend over time.
+
+\subsection{Where cointegration comes in}
+Although each series individually drifts over time, a specific linear combination of them is stationary.
+\textbf{here an ECM could show:} 
+\begin{itemize}
+    \item \textbf{The short run dynamics:} How do changes in Google searches this month move unemployment this month?
+    \item \textbf{The error correction term}: If unemployment was too high or too low last period relative to the long-run equilibrium, does it adjust back
+\end{itemize}
+
+
+
+\subsection{Their econometric model}
+
+Let $U_t$ denote the monthly unemployment rate and $g_{i,t}$ the Google activity index 
+for keyword $i \in \{1, \dots, K\}$.
+The empirical model can be expressed as
+
+\begin{equation}
+    \Delta U_t = \alpha 
+    + \beta U_{t-12}
+    + \sum_{i=1}^{K} \gamma_i \, \Delta g_{i,t}
+    + \sum_{i=1}^{K} \delta_i \, g_{i,t-12}
+    + \varepsilon_t ,
+    \label{eq:az-ecm}
+\end{equation}
+
+where:
+\begin{itemize}
+    \item $U_t$ denotes the monthly unemployment rate 
+    (measured from mid-month $t-1$ to mid-month $t$);
+    \item $g_{i,t}$ is the Google search index for keyword group 
+    $i \in \{1,2,3,4\}$ aggregated to biweekly frequency;
+    \item $\Delta$ is the first-difference operator to ensure stationarity;
+    \item $U_{t-12}$ and $g_{i,t-12}$ introduce a 12-month lag to 
+    control for seasonality and capture long-run cointegration effects;
+    \item $\beta$ measures the speed of adjustment back to the 
+    long-run equilibrium; $\gamma_i$ and $\delta_i$ capture short-run 
+    and long-run effects of search intensity respectively;
+    \item $\varepsilon_t$ is a white-noise disturbance term.
+\end{itemize}
+
+Two variants of this model are estimated:
+\begin{enumerate}
+    \item Using Google activity from weeks 1--2 of the current month ($W12_M$);
+    \item Using Google activity from weeks 3--4 of the previous month ($W34_{M-1}$).
+\end{enumerate}
+Model performance is evaluated using the Bayesian Information Criterion (BIC),
+with the $W34_{M-1}$ specification providing the best predictive fit.
+
+
+\subsection{How they forecast}
+Even thought the unemployment rate and the google trend data is nonstaionary their combination (residuals from cointegrating relation) is stationary.
+Once they have fitted this model, they use it to generate fitted values (in-sample forecasts) and plot them against the actual unemployment rate.
+They basically: They “forecast” the current unemployment rate (nowcast), using Google data that would have been available before the official publication. But this is within-sample prediction, not a separate test set.
+
+
+\subsection{summary}
+\begin{itemize}
+    \item They find determinants: Identify which Google keywords best explain or predict unemployment (significance, sign, and direction).
+    \item They check timing: Compare predictive usefulness of week 1–2 vs. week 3–4 data.
+    \item They evaluate the fit using R-squared, AIC/BIC, and visual performance to judge model performance
+    \item They demonstrate that google searches can serve as leading indicators
+\end{itemize}
+
+\newpage
+\section{Google it! Forecasting the U.S. unemployment rate with a Google job search index; D’Amuri \& Marcucci (2009)}
+
+\subsection{The idea}
+Can Google searches for “jobs” improve short-term forecasts of the U.S. unemployment rate beyond standard indicators like initial unemployment claims (IC)?
+
+\subsection{The data}
+They use as dependent variable: seasonally adjusted monthly
+unemployment rate is the one released by the Bureau of Labor Statistics at the national and the state level.
+\textbf{The use as independnet variable}: seasonally adjusted Initial Claims (IC) released by the U.S.
+Department of Labor3, a well-known leading indicator for the unemployment rate. The GI variable which summarizes the word 'jobs' searches performed through the Google website.
+\\
+\textbf{Important}: The official U.S. unemployment rate for month 
+t (from the BLS) is based on data collected around the 12th of each month, and specifically covers the week that includes the 12th and the three preceding weeks. That’s about weeks 2–5 of the previous calendar month, roughly.
+\textbf{which google trend data did they took}: The week that includes the 12th day of month plus the three preceding weeks.
+So each “month” in their GI series corresponds to exactly those 4 weeks. They aggregate the four weekly GI observations into one monthly number ( the average). 
+
+\subsection{Non-stationarity}
+Due to stationarity issues and knowing that uneplyoment data contains an unit root they compute first differences and compute over 520 ARMA models for this variable.
+
+\subsection{The model structure}
+They estimate four basic time series eskeletons: They use for instance pure AR models. Or also ARMA models mostly up to two lags. 
+The include the GI and IC by augmenting up to ARMAX models:
+$$\phi(L)u_t = \mu + x'_{t} \beta + \theta(L)\epsilon_t$$
+
+\subsection{The evaluation room}
+\begin{table}[H]
+\centering
+\caption{Sample Splits and Forecasting Design in D'Amuri \& Marcucci (2009)}
+\begin{tabular}{@{}lllll@{}}
+\toprule
+\textbf{Group} & \textbf{Contains GI?} & \textbf{In-sample (training)} & \textbf{Out-of-sample (testing)} & \textbf{Purpose} \\ \midrule
+(a) & No  & 1967:1--2007:2 & 2007:3--2009:6 & Benchmark long history \\[3pt]
+(b) & No  & 2004:1--2007:2 & 2007:3--2009:6 & Same period as GI but without GI (control group) \\[3pt]
+(c) & Yes & 2004:1--2007:2 & 2007:3--2009:6 & Same as (b) plus Google data (test value added of GI) \\ \bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Also handling weekly data}
+Since the unemployment rate is measured monthly while both Initial Claims (IC)
+and the Google Index (GI) are available weekly, D'Amuri and Marcucci (2009)
+include weekly observations directly as separate monthly regressors instead of
+using a mixed-frequency (MIDAS) approach. For each month $t$, they define
+four weekly variables ($IC_{w1,t}$--$IC_{w4,t}$ and $GI_{w1,t}$--$GI_{w4,t}$)
+covering the reference weeks of the unemployment survey and enter them
+jointly in a standard ARMAX model:
+\[
+\Delta u_t = \mu + \sum_{p=1}^{2} \phi_p \Delta u_{t-p}
++ \sum_{j=1}^{4} \beta_j IC_{w j,t}
++ \sum_{j=1}^{4} \gamma_j GI_{w j,t}
++ \varepsilon_t .
+\]
+This approach allows weekly information to be used within a monthly model
+without the need for MIDAS polynomial weighting. Given the short sample
+period (2004--2009) and the high correlation across weekly indicators, this
+simpler specification was sufficient and computationally more practical
+than a mixed-frequency alternative.
+
+\subsection{Pseudo out of sample forecasting}
+They pretend they’re at 2007:2, estimate the model using data up to that date, forecast unemployment for 2007:3–2007:5, then move one month forward and repeat.
+They drift away from nowcasting a bit as they actually do not predcit anymore the currents month value before its released but they are predicting the future value $u_{t+h}$
+They also have to forecast the future future unemployment as they treat the future as unknown
+\\
+\textbf{Furtheremore they used four evaluation parts}
+\begin{itemize}
+    \item MSE (Mean Squared Error)
+    \item Diebold–Mariano (DM) test
+    \item Harvey–Leybourne–Newbold (HLN) (does one forecast encompass the other)
+    \item White’s (2000) Reality Check (tells you whether you found a model by chance or not)
+\end{itemize}
+
+\subsection{Interesting finding}
+Even with little history (Google data only from 2004). And even when forecasting true future values (not just current ones). The Google “jobs” searches contain real, leading information that improves short-term forecasts.
+
+\subsection{Robustness checks}
+\textbf{Nonlinearites}: non-linear models to better approximate the long-term dynamic structure of its time
+series while linear
+ARMA models generally give a better representation of its short-term dynamics. Nevertheless when it comes to one month ahead forecasting those models rather rank low.  These non-linear models tend to fare better as soon as we forecast
+the unemployment rate at two and, in particular, at three months ahead,where they rank better.
+\\
+\textbf{State level forecasts}
+They also estimated the
+same 520 models for each of the 51 states (including the District of Columbia). Forecasts obtained aggregating estimates of single state forecasts are inferior to the
+federal ones at all forecast horizons.
+\newpage
+
+\section{Carrière-Swallow \& Labbé, Journal of Forecasting, 2013}
+\subsection{Intuition}
+whether Google Trends can nowcast real-time consumer behavior in an emerging market which in this case is Chile. 
+
+\subsection{Data}
+\textbf{The dependent variable}: Year-over-year percentage change in monthly car sales. They have a Release lag: about one month (data for May is released at the end of June). 
+\textbf{As independent varibale}: Year-over-year growth rate of IMACEC (monthly economic activity index) released by the Central Bank of Chile with a five-week lag.
+\textbf{Google trends data:} They use : Queries for nine major car brands: Chevrolet, Hyundai, Nissan, Kia, Toyota, Suzuki, Ford, Mitsubishi, and Mazda. They download each series 50 times and average them to smooth Google’s sampling noise.
+They aggregate the weekly values to the monthly frequency using a simple average over the weeks that fall into month t. 
+They also compute a year over year growth in the google series.
+
+
+
+\subsection{Nonstationarity}
+All series expressed in year-over-year growth rates to remove seasonality and non-stationarity.Therefore they will also forecast the yearly growth rates and not the month over month change. With that they also get ridd of seasonality and seasonal patterns.  Google data are not trending (so no differencing required). The aim moreover is to create a composite Google Trends Automotive Index (GTAI) capturing search intensity related to car demand.
+
+\subsection{Avoid multicolinearity}
+they combine google trends into a single Google Trends Automotive Index (GTAI) by running a regression of car sales growth on all the brand series. Hence they create an index which is a  weighted linear combination of Google brand searches,
+
+\subsection{Nowcasting idea}
+Use current Google data (available in real time) to estimate the current month’s car sales growth, which will only be published next month. But they will also predict one or more months ahead.
+
+
+\subsection{What are they trying to prove}
+When you add GTAI to standard models of car sales, do forecasts improve significantly, and does GTAI Granger-cause the dependent variable.
+Hence they run
+\begin{itemize}
+    \item In-sample tests of Granger causality
+    \item Out-of-sample nowcasts to confirm that including GTAI improves predictive accuracy (lower RMSE)
+\end{itemize}
+
+\subsection{The models}
+The authors estimate three benchmark models for the year-over-year
+growth rate of automobile sales, $y_t$: a simple AR(1), an AR(1)
+including the macroeconomic activity index (IMACEC), and an ARMA(2,2)
+specification:
+\begin{align}
+y_t &= \alpha_{1a} + \rho_{1a} y_{t-1} + \nu_t, \\
+y_t &= \alpha_{2a} + \rho_{2a} y_{t-1} + \delta_{2a}\zeta_{t-1} + \psi_t, \\
+y_t &= \alpha_{3a} + \sum_{p=1}^{2}\rho_{3a,p} y_{t-p}
+      + \sum_{q=1}^{2}\theta_{3a,q}\varepsilon_{t-q} + \epsilon_t .
+\end{align}
+Each specification is then augmented with the Google Trends Automotive
+Index (GTAI):
+\begin{align}
+y_t &= \alpha_{1b} + \rho_{1b} y_{t-1} + \gamma_{1b}GTAI_t + \nu_t, \\
+y_t &= \alpha_{2b} + \rho_{2b} y_{t-1} + \delta_{2b}\zeta_{t-1}
+      + \gamma_{2b}GTAI_t + \phi_t, \\
+y_t &= \alpha_{3b} + \sum_{p=1}^{2}\rho_{3b,p} y_{t-p}
+      + \sum_{q=1}^{2}\theta_{3b,q}\varepsilon_{t-q}
+      + \gamma_{3b}GTAI_t + \epsilon_t .
+\end{align}
+
+
+
+\subsection{In sample estimation}
+\textbf{They start by running the nested Granger test: }Since the models are nested, this can be done as a simple t-test on the coefficient or equivalently, by comparing MSE (RMSE) across models. For instance if RMSE falls significantly when adding the Google trends that’s evidence that it improves forecasts.
+They find that across all specifications the coefficient is positive and significant. The R-squared rises and the RMSE falls. Adding Google search data significantly improves predictive accuracy even after controlling for past car sales and macroeconomic conditions.\\
+\textbf{They even go further:}
+Can Google Trends help identify whether sales are rising or falling? They hence test : Whether the model correctly predicts the sign of the first and second differences and their fidings indicates GTAI doesn’t just improve numeric fit; it helps capture turning points — i.e., months when the trend reverses.
+
+
+\subsection{Out of sample nowcast evaluation}
+They now try to nowcast car sales before the official data are released.
+\textbf{Here they use a recursive estimation}
+Start with an initial sample: Jan 2006 – Dec 2007, estimate parameters for this sample and use them to nowcast next observation (Jan 2008). Then extend the estimation window by one period (add Feb 2008) and repeat.
+\textbf{Then the roling window estimation}
+Use a fixed-size sample of 24 months each time. Each time a new observation arrives, drop the oldest one.
+\textbf{What they then do:}
+They check which one reduces the mean squarred prediciton error the most. Using Diebold Mariano for instance.
+Under both recursive and rolling schemes, the models including 
+GTAI have lower MSPE than benchmarks. The reduction is statistically significant (i.e., not due to chance). AR(1)-based models outperform ARMA(2,2) out-of-sample which is consistent with the idea that the more complex ARMA(2,2) was overfitting insample.
+
+\subsection{Forecast Comparison Tests.}
+To assess whether the observed reduction in forecast error from including
+the Google Trends Automotive Index (GTAI) is statistically significant,
+the authors apply both unconditional and conditional forecast comparison
+tests.  The unconditional tests of Clark and McCracken (2001,~2005) and
+Clark and West (2007) evaluate whether the benchmark forecasts
+encompass, on average, those of the augmented models.  The null
+hypothesis that the benchmark model fully captures the available
+predictive information is rejected at the 1\% confidence level using the
+ENC--T and ENC--NEW statistics, indicating that the GTAI adds
+independent predictive content.  The Clark--West adjusted mean squared
+prediction error (MSPE) test further rejects the null of equal forecast
+accuracy at the 10\% level under both recursive and rolling estimation,
+confirming that the GTAI-augmented models yield significantly lower
+out-of-sample forecast errors.
+
+Complementing these results, the conditional predictive ability (CPA)
+test of Giacomini and White (2006) examines whether the Google-augmented
+models are expected to continue outperforming their benchmarks given the
+information available to the forecaster.  Using a quadratic loss
+function and a 24-month rolling window, the null of equal conditional
+MSPE is rejected at the 10\% level for the AR(1) and AR(1)+IMACEC
+models.  Overall, both unconditional and conditional tests confirm that
+the inclusion of Google search data leads to statistically and
+economically significant improvements in nowcast accuracy.
+
+
+
+
+
+\newpage
+\section{Issues of google trends \& overall}
+\begin{itemize}
+    \item scaling (only 5 years)
+    \item stationarity (high freequence data, loose signal?)
+    \item Seasonal adjusted data or not ?
+    \item multicolinearity
+\end{itemize}
+
+\end{document}

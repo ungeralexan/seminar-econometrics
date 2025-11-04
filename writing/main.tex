@@ -1,0 +1,139 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{hyperref}
+\usepackage{geometry}
+\geometry{
+ a4paper,
+ margin=1in,
+}
+\begin{document}
+\section*{“Nowcasting German Unemployment Using Google Search Data: A MIDAS Approach”}
+
+\begin{itemize}
+    \item\textbf{Abstract} : Here you could summarize
+    \begin{itemize}
+        \item Objective: real-time nowcasting of monthly unemployment.
+        \item Method: mixed-frequency MIDAS regressions with weekly Google Trends.
+        \item Key result: MIDAS slightly improves forecasts over AR(3), especially in recent periods.
+    \end{itemize}
+
+    \item  \textbf{Introduction (1-1.5}: 
+    \begin{itemize}
+        \item Motivation: Policymakers need early indicators of labor market changes.
+        \item Digital data (searches, social media) provide high frequency signals 
+        \item Existing literature shows potential but robusteness and bias are debated
+        \item Research question: “Can weekly Google search data improve the nowcast of monthly unemployment in Germany compared to an autoregressive benchmark?”
+        \item Contribution: Use a recursive r-MIDAS setup with multiple search terms and ridge regularization
+    \end{itemize}
+
+    \item  \textbf{Literature review}
+    \begin{itemize}
+        \item Traditional unemployment forecasting (Phillips curve, ARIMA, etc.).
+        \item  High-frequency indicators \& nowcasting (Stock \& Watson, Foroni \& Marcellino, etc.).
+        \item Google Trends for labor market prediction (Askitas \& Zimmermann 2009; D’Amuri & Marcucci 2017).
+        \item Gaps: need for mixed-frequency frameworks and recursive real-time evaluation.
+    \end{itemize}
+
+    \item \textbf{Data (2-3 pages)}:
+    \begin{itemize}
+        \item Dependent variable: Monthly unemployment rate (Eurostat or Destatis, seasonally adjusted).
+        \item High-frequency regressors: Google Trends for 5 keywords — explain selection and scaling issue.
+        \item Show your stitching and normalization procedure (include the seam-check table and plot).
+        \item Discuss potential bias (scaling windows, overlapping normalization).
+        \item Brief stationarity and summary statistics table.
+    \end{itemize}
+
+    \item \textbf{Methology: 4-5}
+    \begin{itemize}
+        \item Baseline: AR(3) on monthly  unemployment.
+        \item \begin{equation}
+  \Delta u_t \;=\; \alpha
+  + \sum_{i=1}^{p} \phi_i \,\Delta u_{t-i}
+  + \beta \sum_{k=1}^{K} w_k(a,b)\, x_{t-k}
+  + \varepsilon_t .
+  \label{eq:midas}
+\end{equation}
+\item $w_k(a,b)$ = normalized Beta lag polynomial. A common parameterization is
+ \begin{equation}
+    \tilde w_k(a,b) \;=\;
+    \left(\frac{k}{K}\right)^{a-1}\!\left(1-\frac{k}{K}\right)^{b-1},
+    \qquad
+    w_k(a,b) \;=\; \frac{\tilde w_k(a,b)}{\sum_{j=1}^{K} \tilde w_j(a,b)} .
+    \label{eq:beta-weights}
+  \end{equation}
+\item Discuss ridge penalty across multiple search terms:
+\begin{equation}
+  \min_{\bm{\beta}}\;\; (y - X\bm{\beta})^{\!\top}(y - X\bm{\beta})
+  \;+\; \lambda \lVert \bm{\beta}\rVert_2^2 .
+  \label{eq:ridge}
+\end{equation}
+    \end{itemize}
+
+\item \textbf{Empirical results 4-5}
+\begin{itemize}
+    \item Stationarity tests (ADF, KPSS).
+    \item Stitching sanity checks (show seam jumps, p-values).
+    \item Forecast evaluation table (RMSFE, MAE, DM tests).
+    \begin{itemize}
+        \item Actual vs predicted deltau.
+        \item MIDAS weights (Beta curve).
+        \item Rolling RMSFE difference (MIDAS – AR3).
+    \end{itemize}
+    \item Interpretation:
+    \begin{itemize}
+        \item Small but stable gains from MIDAS.
+        \item Improvement concentrated in crisis months.
+        \item Ridge stabilizes coefficients without overfitting.
+    \end{itemize}
+\end{itemize}
+\item \textbf{Robustness and overfitting 2-3}
+\begin{itemize}
+    \item Change info set (rule="eom" vs "mid").
+    \item Try different lag lengths (K = 13, 26, 52).
+    \item Multi-term vs Factor-MIDAS comparison (brief PCA summary).
+    \item Subsample analysis (pre-2020 vs post-2020).
+\end{itemize}
+
+\item  \textbf{Conclusion (1 page)}
+\begin{itemize}
+    \item \textbf{main takeaway}: “High-frequency Google search data modestly improves real-time forecasts of German unemployment.”
+    \item Limitations: stationarity of GT series, short history, scaling bias.
+    \item Future work: combine MIDAS with ML (LASSO-MIDAS, nonlinear kernels).
+\end{itemize}
+
+    
+\end{itemize}
+
+
+
+\section{Google trend breaks}
+\subsection{The main problem}
+Google Trends scale breaks across 5-year windows. Each API pull is scaled to its own peak (=100). If you just splice windows, you create artificial jumps at window boundaries → biased levels and spurious dynamics.
+
+\subsection{How did we fix it}
+\textbf{Stitching algorithm (window chaining with overlap ratios)}:
+The goal was to pull all windows on a common scale by chaining scale factors from overlapping dates.
+So what does our switching windows function does is it process windows in a chronological order (by window start, window end, date). For each new window, compute same-date overlaps with the previous window.
+And the compute a robust scale factor which is the median of :
+\[
+\text{factor} = \frac{\text{median}(\text{prev window switched value})}{\text{current window raw value}}over overlaps
+\]
+Multiply the current window’s raw values by the cumulative scale.
+When the same date appears twice (because of overlap), keep the latest window’s stitched value (drop duplicates with keep="last").
+Regularize to W-SUN and linearly interpolate tiny gaps.
+This works as after switching any two windows that share the same calendar dates must agree in levels (no seam). That’s precisely what we test next.
+
+You can see that as : for every boundary (2014→2015, 2017→2018, 2020→2021, 2023→2024), the mean/median difference = 0.0 on same-date overlaps → no visible seam after stitching. Perfect.
+
+\subsection{Variance explained by windows sanity check}
+We also created a window map (win map) aligned to your weekly index and computed the pseudo-ANOVA R² of stitched standardized GT on window dummies:
+How could you interprete the 13\%. If switching 
+had failed, R² would be very high (windows explain most variance). Your value indicates stitching removed most window-level artifacts while some genuine period differences remain (expected).
+
+
+
+
+
+\end{document}

@@ -1,0 +1,142 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{hyperref}
+\usepackage{geometry}
+\geometry{
+ a4paper,
+ margin=1in,
+}
+\begin{document}
+\section{Things to watch out (econometrics)}
+
+\section{The target variable}
+\subsection{Seasonality}
+Use a seasonally adjusted (SA) rate from the source. 
+With an SA target, you don’t need to difference for seasonality; you’ll focus on trend/stationarity next.
+
+\subsection{What about stationarity}
+Forecasting/nowcasting doesn’t strictly require the target to be covariance-stationary in levels; lots of macro nowcasts model levels with AR terms.
+That said, unemployment (even SA) often looks “near-unit-root.” To keep inference tidy and avoid spurious regression with high-freq regressors, many papers model changes (first differences) of the rate.
+Seminar-safe baseline: nowcast $/delta$ut (the month-to-month change). Then, if you want levels, just accumulate the predicted change from last known level.
+\textbf{What if the first differencing looks problematic?} check for structural breaks rather than “second differencing.” Add simple break dummies (e.g., pandemic window) to the mean of delta ut (first differences) and continue. 
+\textbf{Idea of time frame 2011-2019}: First difference: IS stationary!  ADF: p=0.0017 (strongly stationary) KPSS: p=0.1000 (stationary).
+This reveals that 2012 was likely a structural break point in German unemployment data!
+Perfect! This explains everything. Here's why including 2011 data made your series stationary: Germany experienced a remarkable labor market recovery after the Great Recession. The economy exited recession in 2009-2010, and employment steadily increased throughout 2011-2012, reaching a record 41.5 million jobs by May 2012. The unemployment rate reached a 20-year low in 2012.
+2012-2019: You're capturing the data AFTER the structural break → the series still contains the memory of the transition → needs d=2
+2011-2019: You're capturing the transition itself → the rapid change in 2011 adds variance that helps achieve stationarity with just d=1
+
+\subsection{So what to write in the paper}
+\begin{itemize}
+    \item \textbf{The diagnostic process:} I performed stationarity tests on multiple sample periods:2012-2019: Required second-order differencing (d=2) for stationarity
+    2011-2019: Achieved stationarity with first-order differencing (d=1). This stark difference indicated a structural break around 2011-2012
+    \item Research into this period confirmed my statistical findings. Germany underwent a significant labor market transition in 2011-2012:
+    The economy fully recovered from the Great Recession. Unemployment reached a 20-year low in 2012. The labor market transitioned from recovery dynamics to a new stable equilibrium. Therefore, 2011 represents a critical inflection point in the unemployment series.
+    \item \textbf{Justification}: Statistical validity: The series is I(1) rather than I(2), which is: More theoretically consistent with economic time series literature. More parsimonious (simpler model with d=1). I(2) processes are rare and often indicate misspecification or structural breaks.
+    \item Economic completeness: Starting from 2011 captures : The full post crisis adjustemnt period. The structural transition to Germanys modern low unemployment regieme. 
+    More representative of the complete economic cycle. 
+\end{itemize}
+\textbf{What you tell the prof:}: I selected 2011-2019 because it captures the complete post-crisis labor market transition, yields a theoretically sound I(1) process, and the stationarity diagnostics confirmed that excluding 2011 would either require second-order differencing, which would be economically implausible for unemployment rates, or result in a misspecified model that ignores a known structural break. 
+\subsection{What is a struture break}
+A structural break means that the statistical properties of your series — such as its mean, variance, trend, or relationships with other variables — change at some point in time.
+The mean,variance or the persisitence of the errors changes at some point. In 2012 to 2019 you would cut of part of the recovery adjustment of the Euro crisis, so the model sees an artificial break between 2011-2012.
+
+
+
+\section{The GT scaling Problem}
+I need GT data from at least late 2010 through Dec 2019. So you can construct lagged weekly predictors for each month in 2011–2019.
+\subsection{What is the scaling Problem}
+Google Trends scales each download to [0,100] within the requested period, so if the download chunks (e.g., 2011–2016, then 2016–2019), the scales don’t match.
+Thats why when I stitch the chunks, the seam values don’t align. 
+\textbf{The problem for MIDAS:} Because MIDAS uses relative changes, inconsistent scaling across subwindows would distort the weighting function.
+
+\subsection{The stitching Problem standard in literature}
+Overlapping-window rescaling
+\begin{itemize}
+    \item Download data in overlapping 5-year windows (since GT limits max range to 5 years for weekly data).
+    \item Keep an overlap of 6 months to 1 year between consecutive windows.
+    \item In the overlap region, compute a scaling ratio that aligns the mean (or median) of the overlapping values.
+    \item Multiply one window by that ratio so the levels match.
+    \item Merge all windows into one consistent weekly series.
+\end{itemize}
+
+\section{Google Trends Data: Collection, Cleaning, and Construction of MIDAS Predictors}
+
+\subsection{Idea in one sentence}
+We use weekly Google search activity in Germany for labor–market related topics to improve a monthly nowcast of changes in the unemployment rate. Because Google Trends is weekly and the target is monthly, we carefully preprocess the weekly signals and then convert them into monthly predictors suitable for a MIDAS regression.
+
+\subsection{Keywords and time span}
+We track five German topics/queries that plausibly move with unemployment:
+\emph{Arbeitslosengeld}, \emph{Jobcenter}, \emph{Stellenangebote}, \emph{Jobbörse}, and \emph{Kündigung}.
+The weekly series are collected from 2010:10 through 2019:12 so that every month in 2011–2019 has enough recent weekly history for lags.
+
+\subsection{How Google Trends scales data and why that matters}
+Google Trends returns values scaled to the range $[0,100]$ \emph{within the requested time window}. If we download long histories in several chunks (e.g., 2011–2016 and 2015–2020), the same week can have different numbers in different chunks. If we stitched chunks naively, we would introduce artificial jumps.
+
+\subsection{Step 1: Overlapping-window downloads (gentle API usage)}
+To avoid scaling breaks while staying within request limits, we download each keyword in overlapping windows:
+\begin{itemize}
+  \item window length: 3 years; overlap: 12 months;
+  \item geography: Germany; property: web search.
+\end{itemize}
+This creates a sequence of windows that partially overlap (e.g., 2010–2013, 2012–2015, 2014–2017, \dots).
+
+\subsection{Step 2: Stitching windows onto a common scale}
+We align adjacent windows using their overlap. For two neighboring windows, we compute a multiplicative factor that matches the \emph{average level} over the overlapping weeks and then apply that factor to the newer window. Chaining these factors across all windows puts the entire series on one consistent scale. If a date appears in more than one window, we average the aligned values for that date.
+\vspace{0.25em}
+
+\noindent\textbf{Plain-language summary:} we make sure the pieces fit by matching them where they overlap so there are no artificial jumps.
+
+\subsection{Step 3: Remove predictable weekly seasonality}
+Weekly search activity has recurring within-year patterns (holidays, school breaks). We remove these by regressing each keyword on week-of-year indicators and keeping the residuals. The residuals are the ``clean'' signals we feed into the model. A quick check shows that after this step the average value by week-of-year is essentially flat (as desired).
+
+\subsection{Step 4: Build monthly MIDAS predictors (weekly $\rightarrow$ monthly)}
+For month $t$, we collect the last $K$ weekly values that \emph{end within} month $t$ for each keyword. We use $K=12$ weeks. This yields a monthly matrix with one row per month and, for each keyword, 12 columns of lags (lag~0 = most recent week of that month, lag~11 = oldest week of that month). These are exactly the high-frequency inputs that the MIDAS polynomial compresses in estimation.
+
+\subsection{Diagnostics (sanity checks)}
+We run three quick checks:
+\begin{enumerate}
+  \item \emph{Continuity:} line plots of each stitched weekly series show smooth behavior without level jumps at window boundaries.
+  \item \emph{Seasonality removal:} the mean by week-of-year is close to zero after deseasonalization, confirming seasonal effects were removed.
+  \item \emph{Missingness:} the monthly $\times$ lag matrix has missing entries only at the very beginning (expected, due to initial lags); otherwise it is full.
+\end{enumerate}
+
+\subsection{What we hand to the econometric model}
+The final object is a monthly design matrix for 2010:10–2019:12 with $K \times$ (\#~keywords) columns (here: $12 \times 5 = 60$), containing deseasonalized weekly lags aligned to each month. We pair this with the \emph{monthly change} in the seasonally adjusted unemployment rate, $\Delta u_t$, for estimation of an ADL–MIDAS regression:
+\[
+\Delta u_t \;=\; \alpha \;+\; \sum_{p=1}^{P}\phi_p\, \Delta u_{t-p}
+\;+\; \sum_{j=0}^{K-1} w(j;\theta)\,GT_{t,j} \;+\; \varepsilon_t,
+\]
+where $GT_{t,j}$ is the (deseasonalized) weekly Google Trends value $j$ weeks before the end of month $t$, and $w(j;\theta)$ is a low-parameter MIDAS lag polynomial (e.g., Beta/Almon) that compresses the $K$ weekly lags.
+
+\subsection{Findings from preprocessing (simple language)}
+\begin{itemize}
+  \item The overlapping-window stitching removed artificial jumps: the weekly series are continuous across the whole sample.
+  \item Seasonal patterns tied to the calendar week were removed, so the Google signals now reflect genuine changes in attention rather than holidays.
+  \item The monthly predictor matrix is well-populated and aligned with the target, ready for MIDAS estimation.
+\end{itemize}
+
+\subsection{Reproducibility notes (one paragraph)}
+All downloads are rate-limited and cached; each window is saved, and stitching is deterministic given the overlaps. Deseasonalization uses simple week-of-year fixed effects. The monthly assignment rule is transparent (weeks are assigned to the month that contains their week end date), and the number of lags $K$ is stated upfront ($K=12$).
+
+
+\section{What is actually used in the midas model}
+We use the deseasonalized weekly values, not z-scores.
+For each month t, we take the last 12 weeks (lag 0 to lag 11) from that month’s end.
+So for each keyword, you get 12 columns:
+e.g. Arbeitslosengeldlag0, …, Arbeitslosengeldlag11.
+Those 12 weekly columns (per keyword) are the actual regressors in your MIDAS model.
+The MIDAS polynomial will weight them smoothly rather than estimating 12 separate coefficients.
+
+\section{The independent variable stationary}
+MIDAS regressions can tolerate mildly nonstationary regressors, especially if the dependent variable is stationary (like delta unemployment).
+The key is to avoid spurious correlation — which is mostly a problem with trends over time.
+ What researchers do in practice
+In most papers using MIDAS with Google Trends (e.g., D’Amuri \& Marcucci 2017, “The predictive power of Google searches in nowcasting unemployment”):
+The dependent variable is change in unemployment (stationary).
+The Google Trends series are used in levels or standardized levels — not differenced — because they capture relative intensity (not absolute counts).
+They often scale each GT series by its standard deviation or z-score within-sample, but not difference it.
+That’s because the MIDAS polynomial captures the dynamic short-run response, not the long-run cointegration.
+\textbf{What you could do}: Optionally standardize each GT variable (z-score across sample) to make coefficients comparable, but not required for validity.
+\end{document}

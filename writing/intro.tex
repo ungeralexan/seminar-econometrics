@@ -1,0 +1,62 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{hyperref}
+\usepackage{geometry}
+\geometry{
+ a4paper,
+ margin=1in,
+}
+\begin{document}
+\section{Context and motivation}
+\begin{itemize}
+    \item Introduce the economic policy problem: official labor market statistics (unemployment) are published with a lag → policymakers lack real-time visibility.
+    \item Mention how timely signals improve decision-making, especially in turning points (COVID, crises, etc.).
+    \item Cite practical motivations: Bundesagentur für Arbeit releases unemployment data monthly with a lag; digital traces can fill the gap.
+    \item Also include what is done in banks nowadays especially with midas regresissions and so on
+\end{itemize}
+
+
+\section{Big idea: high-frequency indicators}
+\begin{itemize}
+    \item Introduce Google search data as behavioral nowcasting signals.
+→ People search for “Jobbörse,” “Stepstone,” “Bewerbung,” etc. before registering as unemployed or employed.
+\item Explain the logic of “digital micro-behavior as a macroeconomic thermometer.”
+\end{itemize}
+
+
+\section{Research gap}
+\begin{itemize}
+    \item Zimmermann and Askitas (2009, 2015) showed early potential of Google data for unemployment prediction in Germany — but typically used monthly aggregates and didn’t align exactly with reporting windows.
+    \item More recent works often use machine learning or high-dimensional search data, but few link the signals directly to the institutional timing of data collection (when the BA compiles unemployment statistics).
+    \item This is your gap: improving timing logic and distinguishing between “early” vs “late” informational content.
+\end{itemize}
+
+\section{My contribution}
+\begin{itemize}
+    \item Construct bi-weekly indicators from Google search volumes aligned to the BA’s reference period.
+    \item Compare “early” vs. “late” information windows.
+    \item Apply Engle–Granger cointegration tests and estimate ECMs for short-run dynamics.
+    \item Conduct an expanding-window out-of-sample nowcasting evaluation (RMSE, MAE, DM tests).
+\end{itemize}
+
+\section{Historical reviews}
+\begin{itemize}
+    \item \textbf{Choi \& Varian (2012) — “Predicting the Present with Google Trends”} 
+    “Choi and Varian (2012) introduced the notion of ‘predicting the present,’ showing that Google search intensities can improve short-run forecasts for several macro indicators, including unemployment, when combined with traditional AR models.”
+    \item \textbf{Suhoy (2009) — “Query Indices and a 2008 Downturn: Israeli Data”}.
+    Suhoy (2009) provided early empirical evidence from Israel that search query indices reflected business cycle turning points during the 2008 downturn.”
+\end{itemize}
+
+\section{Expansion: specialized studies for labor markets}
+\begin{itemize}
+    \item \textbf{Askitas \& Zimmermann (2009)}: Germany; pioneering case study showing correlation between “Arbeitsamt” searches and German unemployment.
+    \item \textbf{Fondeur \& Karamé (2013)}:Fondeur and Karamé (2013) examined whether Google search data could enhance forecasts of youth unemployment in France, finding that predictive power varied across age groups and regions.”
+    \item \textbf{D’Amuri \& Marcucci (2017)}
+    D’Amuri and Marcucci (2017) developed a Google Job Search Index for the United States, showing that including search intensity in an ARMA model improved unemployment forecasts, particularly during turning points.”
+\end{itemize}
+
+\section{other macro indicators \& emerging markets}
+\textbf{Carrière-Swallow \& Labbé (2013)}: “Carrière-Swallow and Labbé (2013) demonstrated that Google search data could improve nowcasts for consumption and retail sales in Chile, emphasizing the usefulness of search data in emerging economies with reporting delays.”
+\end{document}

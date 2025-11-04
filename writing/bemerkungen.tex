@@ -1,0 +1,132 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{hyperref}
+\usepackage{geometry}
+\geometry{
+ a4paper,
+ margin=1in,
+}
+\begin{document}
+
+
+\section{What to do with seasonality}
+
+\subsection{What they did in the paper}
+Zimmer \& Askitas (2009) explicitly used seasonally unadjusted unemployment rates and then modeled seasonality via 12-month differences instead of month dummies. They wrote:
+“To calculate the change of the variables used, a 12-month lag operator is used; consequently, the past stock variables are of lag 12. This has the advantage that we do not need to model seasonality explicitly.”
+
+\subsection{If I do it }
+Use unadjusted unemployment rates (as in the paper) — and handle seasonality either by:
+\begin{itemize}
+    \item including month dummies in lagmodels (your current plan), or
+    \item using YoY differences as a robustness check
+\end{itemize}
+
+\subsection{Why is it better}
+Seasonally adjusted series often have artificial kinks or irregular first differences because the adjustment filters (X-13ARIMA-SEATS) can introduce short-term distortions.
+With unadjusted data + month dummies, you keep the original data-generating process, which is crucial for interpretability and comparison with the literature
+
+
+\section{Cointegration}
+
+\subsection{What about the sample size}
+Your current sample (2016–2021, = 60 months) might be too short for reliable cointegration testing (Engle–Granger) — those tests are notoriously underpowered with <100 obs.
+You found no cointegration, meaning you can’t justify an ECM and should switch to short-run forecasting models in differences — which you already plan to do.
+
+
+\section{Sample size}
+
+\subsection{Ideas}:
+Use at least 8–10 years (= 2011,5–2023) for your estimation sample.
+This keeps enough variation for ADF to detect I(1) properly and gives 120 obs for robust forecasting.
+
+\textbf{What does this timeframe entail}
+\begin{itemize}
+    \item 11 years ties 12 months = 132 observations → enough for ADF, Granger, and rolling forecasts.
+    \item Covers several macro regimes:
+    \begin{itemize}
+        \item pre-Euro-crisis recovery
+        \item COVID shock (2020–21)
+        \item post-COVID labor tightening (2022–23)
+    \end{itemize}
+    \item  The structural breaks (COVID especially) are economically interpretable — not random noise.
+\end{itemize}
+
+\textbf{What would be caveats}
+\begin{itemize}
+    \item There is a structural break in 2020 (you see it in your graph).
+That means: parameters before and after COVID might differ.
+\item f you estimated one static model over the whole period, its coefficients could be biased or unstable.
+\end{itemize}
+
+\subsection{The first idea}
+Dataset should start 2011-05-31 (7.0) and end 2023-01-31 (5.7)
+That’s 11 years + 9 months = 141 months. This means all your final monthly series (unemployment + aggregated Google indicators) must exactly cover: 2011-05 → 2023-01
+
+\section{Forecasting}
+\subsection{HOw to handle the data}
+Use the full 2011–2023 data for estimation + evaluation.
+Model in differences to ensure stationarity.
+You can treat covid as a regime change via:
+\begin{itemize}
+    \item Dummy variable (optional robustness)
+    \item Or better: rolling-window forecasts, e.g. 60-month window, expanding/rolling origin.
+\end{itemize}
+
+
+
+\section{Google trends}
+
+\subsection{Problem}
+Google Trends allows a maximum of 5 years per request for weekly data.
+Beyond that, it automatically switches to monthly data, and each query is normalized independently (each 0–100 within that time slice).
+To maintain comparability, you’ll need to download overlapping 5-year windows and later rescale them.
+
+\subsection{Stitching and rescaling Google Trends.}
+Google Trends returns weekly indices scaled independently within each query window.
+To obtain a consistent weekly series for 2011--05 to 2023--01, we download three overlapping
+windows of up to five years each (to preserve weekly resolution). Let $W_1$, $W_2$, and $W_3$
+denote the weekly series for a given keyword from the first, second, and third window, respectively.
+Because each window is normalized to $[0,100]$ within the window, we rescale across overlaps.
+
+\begin{enumerate}
+\item \textbf{Rescale $W_2$ to $W_1$.} Over the common overlap $\mathcal{T}_{12}$, compute the robust
+scaling factor as the median ratio
+\[
+s_{2\to 1} \;=\; \operatorname{median}\!\left( \frac{W_1(t)}{W_2(t)} \right)_{t \in \mathcal{T}_{12}},
+\]
+after excluding zeros and missing values. Multiply all observations in $W_2$ by $s_{2\to 1}$.
+
+\item \textbf{Rescale $W_3$ to (rescaled) $W_2$.} Over the overlap $\mathcal{T}_{23}$, compute
+\[
+s_{3\to 2} \;=\; \operatorname{median}\!\left( \frac{W_2^{\,\ast}(t)}{W_3(t)} \right)_{t \in \mathcal{T}_{23}},
+\]
+where $W_2^{\,\ast} = s_{2\to 1}\,W_2$ is the rescaled $W_2$. Multiply all observations in $W_3$ by $s_{3\to 2}$.
+
+\item \textbf{Concatenate.} Form the stitched series by taking $W_1$, then appending the rescaled $W_2^{\,\ast}$
+excluding its overlap with $W_1$, and finally the rescaled $W_3^{\,\ast}$ excluding its overlap with
+$W_1 \cup W_2^{\,\ast}$.
+
+\item \textbf{Trim and aggregate.} Trim the resulting weekly series to the target window
+\mbox{2011-05-01 to 2023-01-31}. For monthly models, aggregate by calendar-month averaging.
+For the W34/W12 nowcasting design, compute bi-weekly means aligned to $W34(M-1)$ and $W12(M)$
+and map them to month $M$.
+\end{enumerate}
+
+\subsection{Notes after stiching}
+Seeing values >100 after stitching is normal. You’ve rescaled each window onto a common scale; the combined index is no longer bounded by 100.
+Your printed tail looks great. The weekly window ending 2023-01-29 will aggregate into a January 2023 monthly mean (date labeled 2023-01-31) — exactly what you want for merging with the unemployment rate.
+
+\subsection{Biweekly aggregation}
+
+Following Zimmer et al.\ (2020), we separate each calendar month $M$ into two
+half-month periods. Weeks with days $1\text{–}15$ of month $M$ form the
+\emph{early-month} average $W12(M)$, while weeks with days $16\text{–}\text{end}$
+of month $M{-}1$ form the \emph{late-month} average $W34(M{-}1)$, which is then
+shifted forward to align with month $M$. The resulting feature panel provides
+two biweekly signals per month aligned to the same target month index.
+
+
+\end{document}

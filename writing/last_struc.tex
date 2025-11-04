@@ -1,0 +1,156 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{setspace}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{threeparttable}
+\usepackage{amsmath, amssymb}
+\usepackage{siunitx}
+\usepackage{csquotes}
+\usepackage{natbib}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{placeins}
+\usepackage{listings}
+\lstset{basicstyle=\small\ttfamily,breaklines=true,columns=fullflexible}
+
+\onehalfspacing
+\setlength{\parskip}{0.4em}
+\setlength{\parindent}{0pt}
+\hypersetup{colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue}
+\captionsetup{font=small}
+\sisetup{detect-all=true}
+
+\newcommand{\Wtwl}{\text{W12}}
+\newcommand{\Wthfo}{\text{W34}}
+
+\begin{document}
+
+\begin{center}
+{\LARGE Google Search Indicators and Nowcasting German Unemployment: Early vs. Late Information}\\[0.5em]
+{\large Alex \\ Data Science in Business \& Economics}\\[0.25em]
+{\small Supervisor: TBD \quad Seminar: TBD \quad Date: \today}
+\end{center}
+\vspace{1em}
+
+\begin{abstract}
+This paper evaluates whether Google search indicators aligned to institutional reporting windows improve one-step-ahead nowcasts of German unemployment relative to autoregressive benchmarks. Weekly search series (Indeed, Stepstone, Jobbörse, Arbeitsamt, Bewerbung) are stitched to consistent 2011--2023 histories and aggregated to bi-weekly components reflecting \Wthfo{} (M−1) and \Wtwl{} (M). We compare early vs. late nowcasts and assess gains via out-of-sample RMSE/MAE and Diebold–Mariano tests.
+\end{abstract}
+
+\section{Introduction}
+The study examines the predictive content of high-frequency Google search data for nowcasting German unemployment. We introduce biweekly alignment reflecting institutional publication lags and contrast early versus late information windows.
+
+\section{Related Literature}
+Brief overview of literature on Google Trends for macroeconomic nowcasting and labor market indicators.
+
+\section{Data}
+\subsection{Target and Sample}
+Unemployment rate (Bundesagentur für Arbeit) converted to monthly frequency for 2011--2023.
+\begin{itemize}
+    \item Problem of : The
+announcement dates are provided in advance for the next two years and are almost always at the
+end of the month, but sometimes early in the first week of the following month (Zimmerman)
+\end{itemize}
+
+\subsection{Google Search Indicators}
+Weekly Google Trends indices for Indeed, Stepstone, Jobbörse, Arbeitsamt, and Bewerbung.
+\textbf{Mention here}
+\begin{itemize}
+    \item Intro into google since when the engine exists 
+    \item how you get info : A Google Insights query may have regional, temporal or keyword specific focus,
+i.e. you choose the region of interest, the time frame of interest and the keywords of interest (up
+to 5). The results are then delivered scaled and normalized within the query (for the region, the
+time frame and the selection of keywords)2. 
+\item Explaining the words and why I use them 
+\item  What Zimmerman uses as timeframe and why
+\end{itemize}
+\subsection{Stitching Overlapping Windows}
+Weekly windows are stitched via median-ratio chaining (W1→W2→W3) and aligned to a Sunday grid.
+
+\subsection{Aggregation to Bi-Weekly Signals}
+We create early- and late-month aggregates:
+\begin{itemize}[leftmargin=*]
+  \item $\textbf{W12(M)}$: mean of weekly Sundays with day $\le 15$.
+  \item $\textbf{W34(M−1)}$ shifted to $M$: mean of Sundays with day $>15$ in $M-1$, shifted one month forward.
+\end{itemize}
+All series are month-end labeled and merged with unemployment.
+
+\section{Methodology}
+\subsection{Pre-tests and Transformations}
+ADF and Engle–Granger tests are applied to each indicator and unemployment. Series without cointegration are modeled in first differences.
+
+\subsection{Error--Correction Model (ECM)}
+We estimate two variants:
+\begin{align}
+\Delta y_t &= \alpha + \phi\,\Delta y_{t-1} + \beta_0\,\Delta x^{\Wthfo}_t + \beta_1\,\Delta x^{\Wthfo}_{t-1} + \gamma\,EC^{early}_{t-1} + D_m + \varepsilon_t, \\
+\Delta y_t &= \alpha + \phi\,\Delta y_{t-1} + \beta_0\,\Delta x^{\Wthfo}_t + \beta_1\,\Delta x^{\Wthfo}_{t-1} + \theta_0\,\Delta x^{\Wtwl}_t + \theta_1\,\Delta x^{\Wtwl}_{t-1} + \gamma\,EC^{late}_{t-1} + D_m + \varepsilon_t.
+\end{align}
+
+\subsection{Benchmarks and Evaluation}
+AR and ARX baselines with month dummies; expanding-window OOS evaluation (36-month burn-in). Metrics: RMSE, MAE, DM tests, and encompassing checks.
+
+\section{Results}
+\subsection{Descriptive Checks}
+Coverage and seasonality sanity checks; weekly grid continuity verified.
+
+\subsection{Pre-test Outcomes}
+Engle–Granger results indicate cointegration for Arbeitsamt\_W34prev and Jobbörse\_W34prev.
+
+\subsection{Nowcast Performance}
+Main results: in-sample RMSE/MAE diagnostics, encompassing regressions, and OOS accuracy with DM tests.
+
+\subsection{Discussion}
+Interpretation of early vs. late results and adjustment speeds; institutional timing and robustness.
+
+\section{Robustness}
+\subsection{Pairwise Engle--Granger Screen}
+Pairwise Engle--Granger tests using different trends ($c$, $ct$) confirm strongest cointegration for Arbeitsamt\_W34prev and Jobbörse\_W34prev. Others remain I(1) and serve as short-run drivers.
+
+\subsection{Additional Checks}
+Alternative lags, month-dummy controls, PCA combinations, and sample-split analyses (COVID subperiod).
+
+\section{Conclusion}
+Google search indicators provide timely signals of labor market dynamics. Late-month information marginally improves nowcasts when combined in ECM frameworks.
+
+\section*{References}
+\bibliographystyle{apalike}
+\bibliography{seminar}
+
+\appendix
+\section{Data Construction Details}
+Pseudocode and code excerpts for stitching and aggregation.
+
+\section{Additional Tables and Figures}
+Additional diagnostics, residual checks, and robustness tables.
+
+\subsection{Dynamic Interpretation and Extensions}
+% (This subsection expands ideas (a)–(e) for final text)
+
+\paragraph{(a) Economic interpretation of coefficients.}
+Interpret the sign and size of $\gamma$ (error–correction speed): how fast unemployment returns to equilibrium.
+Discuss $\beta_0,\beta_1$ (short-run impact of late-month W34prev activity)
+versus $\theta_0,\theta_1$ (impact of early-month W12 searches).
+
+\paragraph{(b) Dynamic simulation.}
+Use estimated ECM parameters to simulate a shock scenario (e.g., a 10\% rise in Stepstone W34prev).
+Plot the cumulative response of $\Delta \text{Unemp}$ and the implied level path over three months.
+
+\paragraph{(c) Cross–indicator comparison.}
+Contrast results across \textit{Arbeitsamt}, \textit{Jobbörse}, \textit{Indeed}, and \textit{Stepstone}.
+Highlight which represent public inflow versus private outflow searches and how that affects predictive power.
+
+\paragraph{(d) Seasonality and policy timing.}
+Summarize and interpret month–dummy coefficients.
+Relate recurring seasonal dips (e.g., February–September) to hiring cycles, holidays, and institutional effects.
+
+\paragraph{(e) Model comparison and parsimony.}
+Compare AIC/BIC between Early and Late ECMs.
+Discuss potential overfitting when adding W12 terms, and justify the preferred specification.
+
+\end{document}

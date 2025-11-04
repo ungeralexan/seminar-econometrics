@@ -1,0 +1,134 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{hyperref}
+\usepackage{geometry}
+\geometry{
+ a4paper,
+ margin=1in,
+}
+\begin{document}
+\section{Introduction}
+\textbf{Research question:} Do Google search indicators (aligned to W34 of month $M-1$ and W12 of month $M$) improve \emph{nowcasts} of German unemployment relative to autoregressive benchmarks, and does “early” W34 information deliver most of the gains?
+
+\begin{itemize}
+  \item Motivation: unemployment is released with a lag; nowcasting matters for policy and business decisions.
+  \item Why Google Trends: high-frequency behavioral signal; prior evidence for labor markets.
+  \item W34/W12 timing follows Askitas \& Zimmermann’s institutional logic for Germany (BA mid-month cutoffs and announcement cycle).
+  \item Contributions: (i) bi-weekly alignment to the administrative window; (ii) early vs.\ late nowcast comparison; (iii) rigorous OOS evaluation on a short sample.
+\end{itemize}
+
+
+
+\section{Data}
+\begin{itemize}
+  \item \textbf{Target variable:} German unemployment rate (source, adjustment type, frequency, and seasonality note). Sample window: 2011-05 to 2023-01 (140 months). COVID-19 years (2020–21) serve as a stress-test period.
+  \item \textbf{Google Trends:} 
+  Weekly search intensities for five labor-market categories:
+  \textbf{Inflow-type}:(“Arbeitsamt”, “Kündigung”, “Arbeitslosengeld”).
+  \textbf{Outflow-type}: (“Jobbörse”, “Bewerbung”),
+aggregated to bi-weekly W34prev and W12 components.  
+  \item \textbf{Aggregation:} Weekly Google series averaged into bi-weekly components  (W34($M-1$) and W12($M$)) to match BA reporting cycles. Stitched overlapping Google windows (W1–W3) to consistent 2011–2023 series.
+\end{itemize}
+
+
+
+
+
+\section{Methodology}
+\begin{itemize}
+  \item \textbf{Pre-tests:} Augmented Dickey–Fuller (ADF) for stationarity; 
+  \item Engle–Granger tests (trend = ‘c’ / ‘ct’).Evidence of cointegration between unemployment and arbeitsamtW34prev, jobboerseW34prev. Others: I(1) without cointegration.
+  \item \textbf{Transformations:} Main specification in first differences ($\Delta$) to model short-run dynamics.
+\end{itemize}
+
+
+
+
+\subsubsection*{Path A — Cointegration / Error–Correction Approach}
+
+If unemployment and one or more Google Trends indicators are found to be cointegrated,
+a long–run equilibrium relationship can be established and modeled via an
+Error–Correction Model (ECM). The ECM captures both short–run adjustments
+and the speed of correction toward the long–run path:
+
+\begin{equation}
+\Delta y_t 
+= \alpha 
++ \phi\,\Delta y_{t-1}
++ \beta_0\,\Delta x_t^{W34}
++ \beta_1\,\Delta x_{t-1}^{W34}
++ \gamma\, EC_{t-1}
++ D_m
++ \varepsilon_t,
+\end{equation}
+
+where $y_t$ denotes unemployment, $x_t^{W34}$ the ``early'' (weeks 34 of month $M-1$)
+Google indicator, and $EC_{t-1}$ the lagged error–correction term obtained from the
+cointegrating regression
+\begin{equation}
+y_t = a + b\,x_t + u_t.
+\end{equation}
+
+Seasonal dummies $D_m$ account for systematic month effects.  
+Two ECM variants are estimated:
+
+\begin{itemize}
+  \item \textbf{Early ECM:} uses only the long–run relation and the $\Delta x_t^{W34}$ dynamics.
+  \item \textbf{Late ECM:} augments the short–run equation with the latest
+  available Google information from weeks 1–2 of month $M$ ($W12$):
+  \[
+  \Delta y_t = \alpha + \phi\,\Delta y_{t-1} 
+  + \beta_0\,\Delta x_t^{W34} + \beta_1\,\Delta x_{t-1}^{W34}
+  + \theta_0\,\Delta x_t^{W12} + \theta_1\,\Delta x_{t-1}^{W12}
+  + \gamma\,EC_{t-1} + D_m + \varepsilon_t.
+  \]
+\end{itemize}
+
+Out–of–sample one–step–ahead nowcasts are generated in an expanding–window design
+(starting in May 2016, minimum training window = 36 months).  
+Forecast accuracy is evaluated using RMSE and MAE.
+
+\section{Nowcasting Design}
+\begin{itemize}
+  \item \textbf{Early nowcast:} Uses only 
+W34(M−1) data — available sooner. (faster availability).
+  \item \textbf{Late nowcast:} adds W12($M$) when available; measure incremental gain.
+  \item Evaluation: expanding-window forecasts from 2016-05 onward (min 36 months training).
+  \item Metrics: RMSE, MAE, directional accuracy; Diebold–Mariano tests.
+\end{itemize}
+
+
+
+\section{Results}
+\begin{itemize}
+  \item ADF \& Cointegration: Stationarity summary table; cointegrated pairs highlighted.
+  \item Arbeitsamt ECM: strong long-run adjustment (γ ≈ –0.06).
+  Jobbörse ECM: positive ΔW12 effect (short-run signal).
+  \item \textbf{Out of sample}Report RMSE/MAE for early vs. late ECMs. Late ECM shows marginal but consistent gains, especially for outflow searches.
+\end{itemize}
+
+
+
+
+\section{Robustness and Extensions (still checking feasibility)}
+\begin{itemize}
+  \item Seasonality treatment: month dummies vs. Δ12 vs. YoY changes.
+  \item AAlternative lag orders (1–12).
+  \item Keyword grouping or PCA composites.
+  \item COVID subperiod robustness.
+\end{itemize}
+
+\section{Conclusion}
+\begin{itemize}
+  \item Google search indicators contain predictive content for German unemployment.
+  \item When cointegration holds, ECM captures long-run alignment; when not, ARX suffices.
+  \item “Late” information (W12) improves short-run adjustment—especially for job-search (outflow) queries.
+  \item Implication: Real-time monitoring via search data can complement official labor statistics.
+\end{itemize}
+
+
+
+
+\end{document}
