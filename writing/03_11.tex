@@ -109,6 +109,8 @@ Each of those reflects economic behaviour and expectations in real time.
 \\
 In this growing field of new data that is emerging from web engines google search data clearly stand out as it is publicly accesible, high-frequency, and behaviorally interpretable.
 There changes in search intensity for specific keywords like “jobs,” “application,” or “recession” can reveal shifts in labor market sentiment or employment expectations well before these transitions become visible in official statistics.
+\textbf{The importance of google and search engines}:
+
 \\
 Against this background, an emerging strand of researches in the early 2000 started to explore if online behaviour can actually serve as an signal of macroeconmic developments.
 Here the underlying idea is straightforward. People individual search activities often precede the real ecnomic decissions. 
@@ -129,6 +131,26 @@ They demonstrated that search query volumes can provide real-time signals for va
 In their approach rather then focuss on an traditional forecasting approach they looked at nowcasting and hence that is, estimating economic indicators that are observed with publication lags by using contemporaneous search data.
 Employing autoregressive models bundled with Google Trends indices, they found that including search terms such as “unemployment benefits” or “car sales” improved out-of-sample forecast, particularly around turning points in the business cycle.
 Their work established Google Trends as a valuable and publicly accessible data source for nowcasting, laying the foundation for numerous subsequent applications across labor markets.
+Following these findings in advanced economies \textcite{carrier} as welle examined whether the informational content of Google search data also holds in an emerging market context.
+Focussing on automobile sales in Chile they constructed a Google Trends Automotive Index (GTAI) from brand-related search queries and incorporated it into simple autoregressive nowcasting models.
+Their results showed that models including search data significantly improved both in-sample and out-of-sample forecast accuracy and better captured turning points in sales dynamics.
+Moreover using Granger Causality they confirm that search activity contains information that precedes official sales data, rather than merely reacting to it. They further examined whether these search indices could anticipate future developments and found that the predictive content of Google Trends is not limited to contemporaneous relationships but also provides forward-looking signals of economic activity.
+This study thus demonstrated that even in developing economies, online search activity can serve as a real time barometer of consumer sentiment and market conditions.\\
+Shortly there after \textcite{D'Amuri2010Google} extended this approach to the United States, proposing a Google Job Search Index (GI) as a leading indicator of monthly unemployment. Their analysis compared more than 500 forecasting models, including both linear and nonlinear ARMA and ARMAX specifications, to assess whether the inclusion of Google search activity improves predictive accuracy relative to traditional indicators such as initial unemployment claims.
+Using an extensive out-of-sample framework that included Diebold–Mariano, forecast encompassing, and White’s Reality Check tests, they found that models augmented with the GI consistently outperformed benchmarks based on traditional indicators such as initial claims. As a robustness check, they applied the same methodology to unemployment in all 51 U.S. states, finding that in over 70 \% of cases, models including the GI delivered superior forecasts. Their paper again underscored the strong leading and timely information content of online search activity.
+\\
+While most early research focused on macroeconomic indicators such as unemployment or inflation, \textcite{goel} broadened the scope by studying how online search activity can anticipate consumer behavior.
+Using Yahoo! search data, they analyzed over 300 entertainment products, including movie releases, video game sales, and Billboard music rankings to test whether search intensity could predict real-world outcomes. Their results showed that search queries were highly correlated with future demand, forecasting box-office revenues, video game sales, and song popularity days or even weeks before their release.
+Their study emphasized forecasting forward-looking behavior rather than contemporaneous tracking, and benchmarked search-based predictions against models using traditional data (e.g., production budgets, critic ratings, and prediction market data).
+They found that search activity added most predictive value when conventional data were scarce, demonstrating that web queries can complement or even substitute for established information sources in real time. Importantly, Goel et al. highlighted that search data’s utility depends on context.
+The predictive advantage is strongest for new or unstructured markets (such as new video games) and weaker when detailed baseline data already exist.\\
+One of the earliest contributions that comes from \textcite{ettrege} who were the earliest investigating the relationship web-based search data and macroeconomic statistics.
+Using pre-Google search data obtained from WordTracker’s metasearch engine reports, they analyzed whether the frequency of job-related search terms could anticipate subsequent movements in U.S. unemployment. Their approach was innovative for its time, as it introduced short-term and long-term search indicators
+in order to test he trade-off between timeliness and explanatory power. The study found that while short-term variables carried little predictive content, long-term averages of search activity exhibited strong and significant associations with future unemployment, even outperforming weekly unemployment claims data in explanatory power.
+Furthermore, Ettredge et al. explored whether the strength of this relationship varied across age and gender groups.
+This early heterogeneity analysis anticipated later findings about demographic biases in digital data sources.Despite data limitations, before the availability of large-scale, platform-based indices like Google Trends their study established the core intuition that aggregated online behavior can contain predictive signals about labor market conditions.
+
+
 
 
 \newpage
