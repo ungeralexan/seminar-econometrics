@@ -95,60 +95,158 @@ The analysis compares both window specifications to identify which provides more
 % ---------- Introduction ----------
 \section{Introduction}
 Central banks, research institutions, and economic policymakers rely on timely indicators to monitor macroeconomic conditions and to evaluate the stance of fiscal and monetary policy.
-However, many key statistics like unemployment figures, industrial production, consumer spending, or even inflation, are released only with a considerable delay after the reference period.
-These publication lags create information gaps precisely when rapid responses are most needed, for instance during economic crises, sudden demand shocks, or turning points in the business cycle.
-Here especially the COVID-19 pandemic and the 2008 financial crisis vividly illustrated how delayed labor and consumption statistics hindered timely policy interventions.\\
-Timely knowledge of labor market developments, household consumption patterns, and business sentiment is therefore crucial for authorities to anticipate economic shifts rather than react to them ex post.
-Nevertheless, conventional data collection processes based on surveys and administrative records, are inherently slow and mostly resource-intensive.
-The result is that official indicators often arrive too late to capture the real time economic movements.
+However key statistics such as unemployment, consumer spending, or inflation, are released only with a considerable delay after the reference period.
+These publication delays create information gaps especially when rapid responses are needed, for instance during economic crises, sudden demand shocks, or turning points in the business cycle.
+The COVID-19 pandemic and the 2008 financial crisis vividly demonstrated how delays in labour and consumption statistics hinder timely policy responses.\\
+The instant and timely knowledge of market developments or business sentiment is hence crucial for authorities seeking to anticipate rather than react to economic shifts.
+Nevertheless, data collection processes especially based on surveys or administrative records are slow and often ressource intensive. The result of that is that official indicators often fail to capture real-time economic movements.
 \\
-Within this context researchers and institutions more and more explore the potential of alternative,
-high freuqency data sources that can complement traditional statistics and enhance short-term forecasting.
-Examples of these sources entail digital traces from online job postings, search engine activity, mobility data, or credit card transactions.
-Each of those reflects economic behaviour and expectations in real time.
+With regard to this situation, researchers and institutions more and more explore the potential of alternative, high-frequency data sources, that can complement traditional statistics and enhance short-term and even maybe long-term forecasting.
+Examples here entail digital traces from online job postings, mobility records, credit card transactions, and, most prominently, search engine activity.
+Each of these reflects aspects of real-world behavior and expectations in near real time.
 \\
-In this growing field of new data that is emerging from web engines google search data clearly stand out as it is publicly accesible, high-frequency, and behaviorally interpretable.
-There changes in search intensity for specific keywords like “jobs,” “application,” or “recession” can reveal shifts in labor market sentiment or employment expectations well before these transitions become visible in official statistics.
-\textbf{The importance of google and search engines}:
-
+Among these new data sources search engine queries the ones from google trends stand out, as they publicly available and high-frequent.
+Changes in search intensity of specific words such as “jobs”, “application”, or “recession” may reveal shifts in labor-market sentiment or employment expectations long before those trends appear in official statistics.
 \\
-Against this background, an emerging strand of researches in the early 2000 started to explore if online behaviour can actually serve as an signal of macroeconmic developments.
-Here the underlying idea is straightforward. People individual search activities often precede the real ecnomic decissions. 
-As when people start becoming concered about job security or start seeking new employment, they increase their online searches for such terms like "jobs" or "application". Similarly also searches for "recession" or inflation may signal changes in economic economic sentiment before these trends become visible in traditional statistics.
-These online search patterns represent “micro-level behavioral data” that aggregates across millions of users, form a high-frequency proxy for macroeconomic dynamics. In this sense search activity can be viewed as a digital thermometer of the economy, translating intentions and expectations into measurable signals.
-Google trends here offer a practical implementation of this concept. It search volume indices porvide a publicly accessible, high frequency time series that capture shifts in the information-seeking behavior of individuals, households and firms.
-In contrast to traditional forecasting approaches that aim to predict future developments, nowcasting uses real time information to infer the current state of the economy and hence predicting the present.
-As such, Google search data data have the potential to enhance the timeliness and responsiveness of economic analysis, particularly for indicators subject to publication delays such as unemployment.
+Search engines have become the primary gateway to information on the internet, enabling users to locate and filter vast amounts of content.
+They democratize access to information across social and demographic groups and are used by virtually all segments of the population for a variety of purposes, including job search, product research, and education.
+Consequently, search engines generate massive volumes of data on what individuals are currently interested in, concerned about, or intend to do next.
+Google’s dominance in the search market makes its data particularly representative.
+As of September 2025, Google accounts for approximately 85 \% of desktop and over 92 \% of mobile search engine usage in Germany, ensuring that Google Trends provides broad and demographically diverse coverage of online search behavior.\\
+The theoretical appeal of search data lies in their behavioral immediacy. Individuals’ online searches often precede actual economic decisions.
+When people become concerned about job security or begin seeking employment, they start searching for relevant information online—well before these changes are captured in official labor statistics.
+Similarly, searches for terms like “recession” or “inflation” may reflect emerging shifts in economic sentiment.\\
+Aggregated across millions of users, these search activities form a type of micro-level behavioral data that can serve as a high-frequency proxy for macro-level dynamics.
+In this sense, search activity acts as a digital thermometer of the economy, translating intentions and expectations into measurable signals. Because of this timeliness and behavioral interpretability, search data are particularly suited for nowcasting especially for indicators such as unemployment that are released with delay.
 \\
-Over the past decade, a growing body of research has explored whether Google search data can enhance the timeliness and accuracy of economic forecasts.
-Here the pioneering work by \textcite{Askitas2009} shows one of the first attempts to quantify the informational content of Google search data for macroeconomic forecasting.
-The authors introduced the concept. of a Google predictor, demonstrating that keyword search volumes can anticipate changes in unemployment rates.
-Using the data between 2004 and 2009 they find significant correlations between the frequency of job-related search terms and subsequent unemployment figures published by the Federal Employment Agency.
-In their results which are based on an ECM they showcase how search activity in latter weeks of a month could reliably predict official unemployment data released weeks later.
-Especially they underline that online search behavior often precedes observable labor market movements, which suggests that such digital traces serve as high-frequency indicators of economic sentiment and job market dynamics.\\
+One of the earliest contributions to this line of research comes from \textcite{ettrege}, who investigated the relationship between web-based search data and U.S. unemployment statistics even before Google Trends was available.
+Their study used data from WordTracker’s metasearch engine reports to examine whether the frequency of job-related search terms could anticipate subsequent movements in unemployment.
+They found that while short-term search fluctuations carried limited predictive content, longer-term averages of search activity exhibited strong associations with future unemployment—sometimes outperforming traditional weekly claims data.
+This early work established the fundamental intuition that aggregated online behavior can contain predictive signals about labor market conditions.\\
+This concept was advanced by \textcite{Askitas2009} that introduced the google predictor which was a systematic attempt to quantify the informational content of Google search data for macroeconomic forecasting.
+Using German data from 2004–2009, they demonstrated that job-related search terms correlate strongly with subsequent unemployment figures published by the Federal Employment Agency.
+Their error-correction models showed that increases in such searches reliably anticipated rises in unemployment weeks before official data releases, confirming that online search behavior often precedes observable labor-market movements.\\
 Building on this \textcite{varian} extended the use of Google search data to a broader range of macroeconomic indicators.
-They demonstrated that search query volumes can provide real-time signals for various economic activities such as automobile sales, unemployment claims, travel demand, and consumer confidence.
-In their approach rather then focuss on an traditional forecasting approach they looked at nowcasting and hence that is, estimating economic indicators that are observed with publication lags by using contemporaneous search data.
-Employing autoregressive models bundled with Google Trends indices, they found that including search terms such as “unemployment benefits” or “car sales” improved out-of-sample forecast, particularly around turning points in the business cycle.
-Their work established Google Trends as a valuable and publicly accessible data source for nowcasting, laying the foundation for numerous subsequent applications across labor markets.
-Following these findings in advanced economies \textcite{carrier} as welle examined whether the informational content of Google search data also holds in an emerging market context.
-Focussing on automobile sales in Chile they constructed a Google Trends Automotive Index (GTAI) from brand-related search queries and incorporated it into simple autoregressive nowcasting models.
-Their results showed that models including search data significantly improved both in-sample and out-of-sample forecast accuracy and better captured turning points in sales dynamics.
-Moreover using Granger Causality they confirm that search activity contains information that precedes official sales data, rather than merely reacting to it. They further examined whether these search indices could anticipate future developments and found that the predictive content of Google Trends is not limited to contemporaneous relationships but also provides forward-looking signals of economic activity.
-This study thus demonstrated that even in developing economies, online search activity can serve as a real time barometer of consumer sentiment and market conditions.\\
-Shortly there after \textcite{D'Amuri2010Google} extended this approach to the United States, proposing a Google Job Search Index (GI) as a leading indicator of monthly unemployment. Their analysis compared more than 500 forecasting models, including both linear and nonlinear ARMA and ARMAX specifications, to assess whether the inclusion of Google search activity improves predictive accuracy relative to traditional indicators such as initial unemployment claims.
-Using an extensive out-of-sample framework that included Diebold–Mariano, forecast encompassing, and White’s Reality Check tests, they found that models augmented with the GI consistently outperformed benchmarks based on traditional indicators such as initial claims. As a robustness check, they applied the same methodology to unemployment in all 51 U.S. states, finding that in over 70 \% of cases, models including the GI delivered superior forecasts. Their paper again underscored the strong leading and timely information content of online search activity.
+Rather than traditional forecasting, their approach emphasized nowcasting, estimating indicators that are available only with delay by using contemporaneous search data.
+They demonstrated that incorporating search query volumes, such as “unemployment benefits” or “car sales”, into autoregressive models significantly improved out-of-sample performance, particularly around turning points in the business cycle.
+Their work established Google Trends as a practical and publicly accessible data source for real-time economic monitoring.\\
+Subsequent studies such as \textcite{carrier}, examined whether these results also hold in emerging markets.
+Focusing on Chilean automobile sales, they constructed a Google Trends Automotive Index and showed that including search data improved both in-sample and out-of-sample forecasts and better captured market turning points.
+Their analysis also confirmed that search activity contains information that precedes official data, not merely reacts to it.
 \\
-While most early research focused on macroeconomic indicators such as unemployment or inflation, \textcite{goel} broadened the scope by studying how online search activity can anticipate consumer behavior.
-Using Yahoo! search data, they analyzed over 300 entertainment products, including movie releases, video game sales, and Billboard music rankings to test whether search intensity could predict real-world outcomes. Their results showed that search queries were highly correlated with future demand, forecasting box-office revenues, video game sales, and song popularity days or even weeks before their release.
-Their study emphasized forecasting forward-looking behavior rather than contemporaneous tracking, and benchmarked search-based predictions against models using traditional data (e.g., production budgets, critic ratings, and prediction market data).
-They found that search activity added most predictive value when conventional data were scarce, demonstrating that web queries can complement or even substitute for established information sources in real time. Importantly, Goel et al. highlighted that search data’s utility depends on context.
-The predictive advantage is strongest for new or unstructured markets (such as new video games) and weaker when detailed baseline data already exist.\\
-One of the earliest contributions that comes from \textcite{ettrege} who were the earliest investigating the relationship web-based search data and macroeconomic statistics.
-Using pre-Google search data obtained from WordTracker’s metasearch engine reports, they analyzed whether the frequency of job-related search terms could anticipate subsequent movements in U.S. unemployment. Their approach was innovative for its time, as it introduced short-term and long-term search indicators
-in order to test he trade-off between timeliness and explanatory power. The study found that while short-term variables carried little predictive content, long-term averages of search activity exhibited strong and significant associations with future unemployment, even outperforming weekly unemployment claims data in explanatory power.
-Furthermore, Ettredge et al. explored whether the strength of this relationship varied across age and gender groups.
-This early heterogeneity analysis anticipated later findings about demographic biases in digital data sources.Despite data limitations, before the availability of large-scale, platform-based indices like Google Trends their study established the core intuition that aggregated online behavior can contain predictive signals about labor market conditions.
+\textcite{D'Amuri2010Google} refined hese ideas further by constructing a Google Job Search Index (GI) for the U.S.
+They compared more than 500 forecasting models which include several linear and nonlinear ARMA and ARMAX specifications, to test whether Google search data improved predictions relative to traditional indicators such as initial unemployment claims.
+Using extensive out-of-sample evaluation (Diebold–Mariano tests, forecast encompassing, White’s Reality Check), they found that models including the GI consistently outperformed benchmarks in over 70 \% of U.S. states.
+Moreover, quarterly forecasts based on their models performed comparably or better than those from the Survey of Professional Forecasters (SPF).
+Their findings strongly supported the notion that online search activity contains timely and leading information about labor-market dynamics.
+\\
+While most early research focused on macroeconomic indicators such as unemployment or inflation, \textcite{goel} expanded the focus to consumer behavior, using Yahoo! search data to predict entertainment product demand.
+They found that search intensity was highly correlated with future sales and popularity, often outperforming traditional predictors when baseline data were scarce. This work emphasized that web search data’s predictive advantage depends on the context—it is particularly valuable for new or fast-changing markets where official data are limited.\\
+Complementary research also explored diverse areas: Guzman (2011) on inflation, Baker and Fradkin (2011) on job-search responses to policy changes, and Preis et al. (2010) and Schmidt \& Vosen (2009) on consumer sentiment and retail sales.
+These studies collectively underscore the versatility of search data as a real-time barometer of social and economic activity.\\
+Despite extensive international evidence, relatively few recent studies have revisited the German labor market using up-to-date Google Trends data.
+Given Germany’s economic size, its distinct labor-market institutions, and the increasing penetration of digital search behavior (with over 85 \% of searches conducted via Google), re-evaluating the predictive power of search data in this context remains of high relevance.\\
+Against this background, the present seminar paper follows the general framework of \textcite{Zimmermann2012} and investigates whether search-intensity data from Google Trends can improve the nowcasting and short-term forecasting of German unemployment. The central idea is that search terms related to job seeking or applications may contain leading information about changes in the unemployment rate, reflecting individuals’ job-search behaviour even before official labour statistics are released.
+To examine this relationship, I construct a monthly panel covering the period from mid-2011 to January 2023, combining official unemployment data from the Federal Employment Agency with bi-weekly Google Trends indicators for several search terms.
+This period offers both sufficient length for robust econometric estimation and enough variation to capture major economic phases, including the recovery from the Eurozone crisis, the COVID-19 pandemic, and the subsequent inflationary period.
+Because Google Trends provides only five years of weekly data per download, the series are carefully stitched from overlapping time windows to obtain a continuous historical record. 
+Following \textcite{Zimmermann2012}, the analysis distinguishes between two bi-weekly windows, where one covering the two weeks prior to the official unemployment release and another capturing the two weeks after. This is done in order to test whether search behaviour anticipates or reacts to labour-market outcomes.
+Before estimating the models, each series is examined for stationarity using Augmented Dickey–Fuller tests and inspected for potential deterministic trends and seasonal components, which are common in labour-market indicators. 
+To investigate the long-run equilibrium relationship between unemployment and search activity, I employ the Johansen cointegration framework and estimate a set of Vector Error Correction Models (VECM). 
+Each VECM includes the unemployment rate and the corresponding two Google Trends variables, allowing both short and long-run dynamics to be jointly identified. 
+The cointegration rank is determined via the Johansen trace and maximum-eigenvalue tests.
+Once the VECMs are estimated, I evaluate their in-sample fit through nowcasting exercises, replicating Zimmermann’s approach by reconstructing the in-sample unemployment path from the fitted differences. 
+In addition, I extend the analysis by performing out-of-sample forecasting with both expanding and rolling estimation windows. 
+This enables a comparison of the models’ predictive accuracy across horizons of one, two, and three months, going beyond the scope of earlier studies such as \textcite{Zimmermann2012} and \textcite{Askitas2009}. 
+Finally, impulse-response analyses provide further insight into the short- and long-term reactions of unemployment to shocks in search intensity, helping to assess the behavioural and policy relevance of these relationships.
+The next section introduces the data in greater detail, outlining the sources, transformations, and construction of the Google Trends variables and official unemployment series used in the empirical analysis.
+
+\section{Data}
+\subsection{Official unemployment series (Germany)}
+The target variable in this study is the \emph{seasonally unadjusted} monthly unemployment rate for Germany published by the \textit{Bundesagentur für Arbeit} (Federal Employment Agency). Concretely, I use the nationwide series labelled (Arbeitslosenquote bezogen auf alle zivilen Erwerbspersonen), i.e., the unemployment rate relative to the entire civilian labour force. The series is expressed in percentage points at monthly frequency.
+Following \textcite{Zimmermann2012}, I deliberately work with the unadjusted rate rather than a seasonally adjusted counterpart. This choice preserves the raw cyclical and calendar-related variation that is informative for high-frequency indicators and is standard in the related literature on search-based nowcasting for Germany. To maintain consistency with prior work, I also exclude alternative denominators (e.g.\ “abhängige zivile Erwerbspersonen”) and regional disaggregations (West/East); only the all-Germany aggregate is retained.
+For empirical transparency, I use a single, latest-available vintage downloaded from the Federal Employment Agency’s statistical releases. In the next subsection I motivate the sample window used in the analysis and describe the exact transformations applied to construct the modelling panel.\\
+In contrast to the paper of \textcite{Zimmermann2012}, where the authors relied on a relatively short observation window, covering January 2004 to April 2009. This study employs a substantially longer and more recent sample spanning mid-2011 to January 2023.
+The decission to focus on this timeframe is motivated by both data-availability constrains and economic considerations.\\
+From a practical point of view, the choice to begin the sample in 2011 is motivated by both data-related and economic considerations.
+On the data side, Google Trends data are officially available from 2004 onward, but the early years of the platform are known to be less reliable. Before 2011, Google’s underlying systems for query collection and normalization were repeatedly revised, and the earlier “Google Insights” interface used in Zimmermann’s study (2009) was later replaced by the current Google Trends format.
+These changes bring difficulty when it comes to ensure that search volumes from the mid-2000s are directly comparable with those of more recent years.
+Moreover, internet penetration in Germany increased sharply over that decade, meaning that search activity before 2010 may not yet have represented the broader population.
+By starting in 2011, the analysis builds on a period where Google search behavior had become widespread, data were recorded in a consistent format, and the search indices show stable, reproducible patterns across downloads.\\
+At the same time, the choice of 2011 as a starting point is also justified from the perspective of the unemployment series itself. During the mid-2000s, German unemployment was shaped by the aftermath of the Hartz reforms and the recovery from the early-2000s recession.
+By 2010–2011, these structural adjustments had largely played out, and the labor market entered a phase of relative stability and sustained improvement. Beginning the analysis at this point therefore avoids structural breaks linked to policy reforms, providing a cleaner relationship between online job-search behavior and the observed unemployment rate.
+It also creates a more symmetric window that includes both expansionary and contractionary phases. It entails the post-Eurozone crisis recovery, through the low-unemployment years before COVID-19, to the pandemic shock and the inflationary period after 2022.\\
+Of course, this decision also has trade-offs. Excluding the earlier years reduces the historical depth of the sample and means that the results cannot directly replicate Zimmermann’s 2004–2009 findings.
+However, the improved data quality, stable coverage, and economic relevance of the 2011–2023 period arguably outweigh these drawbacks.
+The resulting dataset captures more than a decade of modern labor-market dynamics in Germany, offering both a longer and more diverse testing ground for assessing whether search activity continues to anticipate changes in unemployment.
+\subsection{Google trends data}
+Google Trends is an analytical tool that provides aggregated, anonymized, and categorized data on search queries entered through Google’s search engine. Every day, billions of searches are conducted globally, and it would be computationally infeasible to process each one individually for public statistics. To make the data accessible in near real time, Google applies a random sampling procedure: it selects a representative subset of all searches, ensuring that the resulting data reflect the overall pattern of search activity without compromising user privacy.\\
+Before publication, Google performs extensive data cleaning and aggregation. This process removes elements that could distort or endanger the representativeness of the sample. For example, searches containing personally identifiable information, queries with extremely low volume (such as a person’s full name), or repeated searches by the same user within a short time window. Through this filtering, the data are smoothed and anonymized, capturing general trends in collective search behavior rather than individual actions.\\
+Once search counts are collected, Google normalizes them to make the data comparable across regions, time periods, and keywords.For a given search term k, location r, and time period t, Google first computes the relative frequency of that search term:
+\begin{equation}
+R_{k,r,t} = \frac{S_{k,r,t}}{S_{r,t}},
+\end{equation}
+where \(S_{k,r,t}\) denotes the number of Google searches for term \(k\) in region \(r\) during period \(t\), and \(S_{r,t}\) is the total number of all searches in the same region and period.
+To facilitate interpretation, these ratios are then rescaled to a 0–100 index within the chosen time frame, where 100 corresponds to the period with the highest relative search intensity:
+\begin{equation}
+I_{k,r,t} = 100 \times \frac{R_{k,r,t}}{\max_{t}(R_{k,r,t})}.
+\end{equation}
+
+Here \(I_{k,r,t}\) represents the normalized Google Trends index, where 100 corresponds to the period of maximum relative search interest.
+All other observations are expressed as percentages of this maximum, so an index value of 50 means that the search term was half as popular relative to total search activity as in its peak week. Because the normalization is conducted within each query request, absolute search volumes cannot be inferred.
+The data are relative and dimensionless, suitable for temporal comparison but not for cross-query volume analysis.\\
+Google Trends was first introduced in May 2006 as a public tool for visualizing search interest and later replaced its predecessor, Google Insights for Search, in 2012. The underlying data, however, extend back to January 2004 and are updated continuously. Users can customize their data requests along several dimensions, including the time range (from a single day to the full history since 2004), the geographic scope (global, national, or subnational regions such as the German Bundesländer), and the thematic category (for example, “Jobs \& Education”). Furthermore, users can specify the search type, such as Web, Image, News, Shopping, or YouTube searches, and disambiguate keywords through the “Topic” feature, which groups synonyms, misspellings, and semantically related expressions. For instance, searches for Apple Inc. can be distinguished from those for the fruit “apple.”
+These settings allow researchers to customize the scope and interpretation of the data while limiting contamination from unrelated search behavior. 
+\subsection{Google trends stiching}
+As mentioned above, Google Trends returns weekly series that are normalized within each query window.
+Since a single request can cover at most ~5 years at weekly frequency, any horizon beyond that must be assembled from overlapping downloads.
+Because each window is internally scaled (0–100) relative to its own maximum, raw levels are not comparable across windows; they must be re-scaled in the overlap before concatenation.
+Zimmermann’s original application (2004–2009) did not encounter this problem to the same extent because the analysis window fit comfortably within a single normalization regime.
+\\
+Let $x^{(j)}_{t}$ denote the Google Trends index for a fixed search term $k$ returned from window $j$ on week $t$, with $j=1,\dots,J$ ordered from oldest to newest. Suppose windows $j$ and $j{+}1$ overlap on the set of weekly dates $\mathcal{O}_{j}$. Because $x^{(j)}$ and $x^{(j+1)}$ are each normalized internally, I estimate a scalar link factor that maps the scale of window $j{+}1$ onto window $j$. A robust choice uses the median ratio over the overlap, excluding zeros and non-finite values:
+\begin{equation}
+s_{\,j{+}1 \leftarrow j}
+\;=\;
+\operatorname{median}
+\Big\{
+\frac{x^{(j)}_{t}}{x^{(j+1)}_{t}}
+\;:\;
+t \in \mathcal{O}_{j},\,
+x^{(j)}_{t}>0,\,
+x^{(j+1)}_{t}>0
+\Big\}.
+\label{eq:medianratio}
+\end{equation}
+I then re-scale all observations in the later window by this factor,
+\begin{equation}
+\tilde{x}^{(j+1)}_{t}
+\;=\;
+s_{\,j{+}1 \leftarrow j}\,\cdot\,x^{(j+1)}_{t}
+\qquad
+\text{for all } t \text{ in window } j{+}1,
+\label{eq:rescale}
+\end{equation}
+and proceed sequentially from the oldest to the newest window. With three overlapping windows $W_{1},W_{2},W_{3}$ the chain-linking reads
+\begin{equation}
+s_{\,2 \leftarrow 1}
+=
+\operatorname{median}\!\left(\frac{x^{(1)}_{t}}{x^{(2)}_{t}}\right)_{t \in \mathcal{O}_{1}},
+\qquad
+\tilde{x}^{(2)} = s_{\,2 \leftarrow 1}\,x^{(2)},
+\qquad
+s_{\,3 \leftarrow 2}
+=
+\operatorname{median}\!\left(\frac{\tilde{x}^{(2)}_{t}}{x^{(3)}_{t}}\right)_{t \in \mathcal{O}_{2}},
+\qquad
+\tilde{x}^{(3)} = s_{\,3 \leftarrow 2}\,x^{(3)}.
+\label{eq:chain}
+\end{equation}
+A single weekly series $\{\tilde{x}_{t}\}$ is obtained by taking all dates from the earliest window and appending the non-overlapping tails of the re-scaled later windows, sorted on a strict 7-day (Sunday) grid. The median ratio in~\eqref{eq:medianratio} is deliberately chosen for robustness: weekly overlaps may include zeros (clipping) and spikes (weeks set to 100 by within-window normalization), for which the mean ratio would be unduly sensitive.\\
+A separate source of variation arises because Google delivers indices from daily random samples of the underlying query stream; identical requests on different days can yield slightly different series. A common remedy in the literature is to repeat the exact same download $K$ times and average across pulls to reduce sampling noise \parencite[e.g.,][]{CarriereSwallowLabbe2013}.
+Given the seminar timeline, I did not implement this pulling protocol here; I discuss it as a robustness extension and note that it is complementary to the stitching approach above.
+\\
+Two practical limitations merit acknowledgement. First, the link factors $s_{\,j{+}1 \leftarrow j}$ may be sensitive to structural breaks inside the overlap (for example, sudden spikes in attention or platform changes). I therefore exclude zero weeks, check the stability of~$s$ across sub-overlaps, and verify that results are qualitatively unchanged when using mean ratios or trimmed medians. Second, the stitched index remains a \emph{relative share} of total Google activity for a given term; it is coherent over time \emph{within} that term but not an absolute level, and indices from unrelated terms are not directly comparable unless retrieved jointly under identical parameters.
+
 
 
 
@@ -168,7 +266,7 @@ This early heterogeneity analysis anticipated later findings about demographic b
 % Explain estimation strategy, assumptions, identification, and inference procedures.
 
 % ---------- Data ----------
-\section{Data}
+
 % Describe data sources, construction of variables, sample selection and summary statistics.
 % Include well-labeled tables and figures where appropriate.
 \begin{table}[H]
@@ -201,6 +299,18 @@ This early heterogeneity analysis anticipated later findings about demographic b
 % ---------- Conclusion ----------
 \section{Conclusion}
 % Summarize results critically, discuss limitations and implications, and conclude.
+\section{safes}
+\subsection{This I still mention in intro}
+\textbf{Carrier}: 
+CARRIER EXTRA
+Focussing on automobile sales in Chile they constructed a Google Trends Automotive Index (GTAI) from brand-related search queries and incorporated it into simple autoregressive nowcasting models.
+Their results showed that models including search data significantly improved both in-sample and out-of-sample forecast accuracy and better captured turning points in sales dynamics.
+Moreover using Granger Causality they confirm that search activity contains information that precedes official sales data, rather than merely reacting to it. They further examined whether these search indices could anticipate future developments and found that the predictive content of Google Trends is not limited to contemporaneous relationships but also provides forward-looking signals of economic activity.\\
+\textbf{Goel}: Using Yahoo! search data, they analyzed over 300 entertainment products, including movie releases, video game sales, and Billboard music rankings to test whether search intensity could predict real-world outcomes. Their results showed that search queries were highly correlated with future demand, forecasting box-office revenues, video game sales, and song popularity days or even weeks before their release.
+Their study emphasized forecasting forward-looking behavior rather than contemporaneous tracking, and benchmarked search-based predictions against models using traditional data (e.g., production budgets, critic ratings, and prediction market data).
+They found that search activity added most predictive value when conventional data were scarce, demonstrating that web queries can complement or even substitute for established information sources in real time. Importantly, Goel et al. highlighted that search data’s utility depends on context.
+The predictive advantage is strongest for new or unstructured markets (such as new video games) and weaker when detailed baseline data already exist.
+
 
 % ---------- References ----------
 \printbibliography
