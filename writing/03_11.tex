@@ -9,7 +9,8 @@
 \usepackage[a4paper,margin=2.5cm]{geometry}   % sensible margins for A4
 \usepackage{setspace}                         % for 1.5 spacing
 \onehalfspacing
-\usepackage{microtype}                        % better justification/kerning
+\usepackage{microtype}       
+\usepackage{natbib}
 \usepackage[english]{babel}
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
@@ -19,9 +20,16 @@
 \usepackage{booktabs}                         % nicer tables
 \usepackage{caption}
 \usepackage{subcaption}
+\usepackage{hyperref}
 \usepackage{csquotes}                         % recommended with biblatex
 \usepackage[backend=biber,style=authoryear,doi=false,isbn=false,url=true,maxcitenames=2,maxbibnames=99]{biblatex}
 \addbibresource{referencen.bib}
+% --- TikZ figure setup ---
+\usepackage{tikz}
+\usetikzlibrary{decorations.pathreplacing} % for the braces
+\usetikzlibrary{calc}                      % optional, helps with coordinates
+\usepackage{float}                         % for [H] placement specifier
+
 
 
 % Hyperlinks last
@@ -246,6 +254,122 @@ A separate source of variation arises because Google delivers indices from daily
 Given the seminar timeline, I did not implement this pulling protocol here; I discuss it as a robustness extension and note that it is complementary to the stitching approach above.
 \\
 Two practical limitations merit acknowledgement. First, the link factors $s_{\,j{+}1 \leftarrow j}$ may be sensitive to structural breaks inside the overlap (for example, sudden spikes in attention or platform changes). I therefore exclude zero weeks, check the stability of~$s$ across sub-overlaps, and verify that results are qualitatively unchanged when using mean ratios or trimmed medians. Second, the stitched index remains a \emph{relative share} of total Google activity for a given term; it is coherent over time \emph{within} that term but not an absolute level, and indices from unrelated terms are not directly comparable unless retrieved jointly under identical parameters.
+\subsection{biweekly aggregation approach}
+The construction of biweekly indices follows the timing rationale of \cite{Zimmermann2009}, adapted to the reporting cycle of German labor-market statistics. The Federal Employment Agency (Bundesagentur für Arbeit) releases unemployment figures around the end of each month at 10:00 a.m., but these data refer to conditions in the previous calendar month.\footnote{For example, the January 2023 unemployment rate was released on 31 January 2023, referring to labor-market conditions as of 12 January 2023; see Bundesagentur für Arbeit,\href{https://statistik.arbeitsagentur.de/DE/Navigation/Service/Veroeffentlichungskalender/Veroeffentlichungskalender-Nav.html}{Veröffentlichungstermine Arbeitsmarktdaten}. This lag is broadly stable across years.}
+This institutional lag implies that agents, such as job seekers, firms, and media, receive official labor-market information with roughly a two-week delay relative to the underlying economic situation. In turn, search behavior in Google may react both to *real* labor-market changes (prior to the official release) and to the *public dissemination* of these statistics (after the release). Distinguishing between these two windows is crucial for a nowcasting framework: it allows one to separate ``anticipatory'' search activity from ``reactionary'' search activity triggered by the news itself.
+\newpage
+To capture these dynamics, I construct two biweekly Google Trends aggregates per calendar month $M$:
+\begin{itemize}
+    \item \textbf{W12\textsubscript{$M$}}: search activity during the \emph{first half} of month $M$ (days 1–15), representing information available \emph{before} the official release for month $M{-}1$.
+    \item \textbf{W34\textsubscript{$M-1$}}:search activity during the \emph{second half} of the previous month ($M{-}1$), which is aligned forward to $M$ for prediction. This window captures how users react to the newly published unemployment data for $M{-}1$ and potentially update expectations for $M$.
+\end{itemize}
+Unlike \cite{Zimmermann2009}, who proportionally re-split weekly indices to match day-of-month boundaries exactly, I assign each week in its entirety to the half-month containing its Sunday timestamp. This ``whole-week assignment'' preserves the original Google Trends scaling and avoids distributing a single weekly value across two subperiods.\\
+Formally, let $\{\tilde{x}_t\}_{t \in \mathcal{T}}$ denote the stitched weekly index for a given search term, observed at Sundays $t$ with calendar date $(y(t),m(t),d(t))$. Define the weekly subsets
+\begin{align}
+\mathcal{W}^{12}_{M} 
+&= \big\{\, t \in \mathcal{T} : m(t)=M,\ d(t)\le 15 \,\big\}, \label{eq:w12set}\\
+\mathcal{W}^{34,\text{prev}}_{M}
+&= \big\{\, t \in \mathcal{T} : m(t)=M-1,\ d(t)> 15 \,\big\}, \label{eq:w34set}
+\end{align}
+where $\mathcal{W}^{34,\text{prev}}_{M}$ is shifted forward to align with month $M$. The biweekly aggregates are defined as simple averages:
+\begin{align}
+X^{12}_{M} 
+&= \frac{1}{\lvert \mathcal{W}^{12}_{M}\rvert}\ \sum_{t \in \mathcal{W}^{12}_{M}} \tilde{x}_t, 
+\qquad
+X^{34,\text{prev}}_{M} 
+= \frac{1}{\lvert \mathcal{W}^{34,\text{prev}}_{M}\rvert}\ \sum_{t \in \mathcal{W}^{34,\text{prev}}_{M}} \tilde{x}_t.
+\label{eq:w12w34means}
+\end{align}
+A concrete calendar illustration (without the three-Sundays edge case) is provided in Appendix~\ref{app:biweekly-example}.
+Because Sundays do not necessarily coincide with the 1st, 15th, or 16th of a month, the sets $\mathcal{W}^{12}_{M}$ and $\mathcal{W}^{34,\text{prev}}_{M}$ may contain one, two, or three observations. This design preserves the temporal coherence of weekly data while still aligning with the monthly unemployment release cycle.\\
+The resulting biweekly panel spans June 2011 to January 2023, yielding $T = 140$ monthly observations. This horizon provides sufficient degrees of freedom for time-series estimation while allowing a clear separation between the information available \emph{before} and \emph{after} each official labor-market release. Consequently, the specification aligns naturally with a nowcasting framework that tests whether search intensity during W12\textsubscript{$M$} can anticipate changes in unemployment, whereas W34\textsubscript{$M-1$} captures adjustments following the publication of the previous month’s data.
+
+
+\subsection{The selection of google trends variables}
+The selection of search indicators reflects how German job search is organized in 2011–2023 and is deliberately updated relative to \cite{Zimmermann2009}. Whereas \textcite{Zimmermann2009} use four groups: (k1) \emph{Arbeitsamt/Arbeitsagentur}, (k2) \emph{Arbeitslosenquote}, (k3) \emph{Personalberater/Personalberatung}, and (k4) a composite of major job boards, my study focuses on a smaller, behaviorally clearer set tied to modern search and application practices (2011–2023).
+This change tries to avoid news-driven terms and brands whose relevance changed markedly after 2010, while retaining the original idea of measuring inflows into unemployment.
+The first variable is the german word Arbeitsamt which shows the contanct with the unemployment office. The idea is that it should cpature information seeking around the public employment service, similar to k1 in \cite{Askitas2009}.
+It is clearly retained as it proxies administrative touchpoints preceeding with unemployment.
+The second one is Jobbörse which is the offical job board usage. This relates to the public portal of the federal employment afency which is stable and policy relavnt. It is as well part of Zimmermans k4 set as it reflects search on an non commercial platfrom tigtly linked to unemployment services.
+Moreover stepstone and Indeed which heavily relate to the private job board search inetensity both are dominant private platforms in germany over 2011-2023. We include these to capture the rest of \cite{Askitas2009} broad k4 basket and to avoid brand drift.
+Finally Bewerbug is chosen, whihc measured the german application and cv activity and showcases the intent to apply.
+I believe it directly targets the applciation step and entails the  importance of words like cover letters, templates and how to write and application. It can be seen preferably close to Personalberater/Personalberatung as of \cite{Askitas2009} paper, which is niche, twosided and changing in meaning over time. 
+The two excluisons of are intentional. 
+ First, \emph{Arbeitslosenquote} (Zimmermann’s k2) is in my believe primarily news-driven and risks hence capturing reactions to press releases rater than job search behavoiur itself.
+ In a future nowcasting setup this could as well blur the distinction between pre-release information (W34$_{M-1}$, W12$_M$) and post-announcement reactions.
+ Second the broad brand basket they formulated as their k4 
+ is less robust in 2011–2023 because platform composition and market shares changed: consolidations, rebrandings, and varying SEO can inject artificial breaks. Narrowing to \emph{Stepstone} and \emph{Indeed} yields cleaner, conceptually stable proxies for private job-search intensity while \emph{Jobbörse} preserves the public-portal channel.
+
+ \subsection{Things to keep in mind}
+ Before edging on to the explaantory analysis it is important to mention a few things. First as \cite{Askitas2009} mentioned in his paper, google trends has been modifying and chnaging the way they collect data and the way we access the data. For instance it is known that google treneds actually performs normalization on the data that atleast exceed a certain trashhold especially when it comes to the number of searches. The exact treshold though is not listed and hence the inclusion of other variables or the similiarity when it comes to words and the procedure for forecasting or other analysis is not always given.
+ As well, \cite{Askitas2009} mention their approach that resplitts the activity proportionally in order to match the weekly base of google trends and that is necessary to perform their analysis.
+Because of this, it is possible that three weekly observations fall into one biweekly segment. 
+However, the aggregation criterion remains internally coherent, and any small biases introduced by uneven week counts are expected to average out over the full twelve-year sample.\\
+Even though as mentioned before google tried to disambiguate keywords through the topic feature Varian here claims that the probablilistic assignment google uses in order to shape its topics introduces further noise. He clearly emphasizes how a search query is partially assigned to all its relevant categories. He here clearly shows how apple could be weightedly attributed to information systems but at the same time as well to food and the weights are dertemined by google.
+As a consequence, this can lead to an bias during the classification process with regard to their interpretation.
+A researcher that might be interested in computer systems or information systems could find words such apples that are inflated by peoples interest in the food and witzh that in a different meaning.\\
+Furtheremore it is once again important to mention the in Carriers paper upcoming and detecting sample noise. With this, identical requests at different days return series that are similar but with minor changes. 
+He here encourages an 24h sampling method that refetches the data every 24 hours. 
+Once downloaded the data over an specifc amount of days everday, he suggests 50 day should be enough, the idea is to average out all the small differences. 
+With this it is possible to reduce the measurement error that is introduced by google.
+The aspect is very related to the data quality of google.\\
+Futheremore it is importnat to showcase Limitatioons that have been emphasized on, in Amuris paper. 
+Like in other web search engines here it is important to mention that when using the google trend variables all the individulas seeking for jobpostngs or for news with regard to the job market may well be not ramdomly selected among job seekers.
+Morerover, the indicators entail all job looking or job searching activities, which is the sum of all the searches performed by unemployed but at the same time by employed people. This can even more emphasize that while unemployeds job search is believed to follow anti cyclical variation of job separation rates, on-the-job search is normally assumed to be cyclical.
+Here especially the keywords put in in the search engine do not always have to match people directly looking for jobs due to unemployment but can also cover students that are looking working student jobs or internships and hence could have a short time impact on the labour market. So google just provides the normalized data but due to data privacy reasons do not provide a lot of informtaion of whihc group pf people especially when it comes to age or gender is actually in need of it and hece does not offer to give more insight into more exploratory or subset analysis.
+
+
+
+
+
+\section{Deycriptive statistics and Visual Inspection}
+
+\subsection{Descriptives}
+Before proceeding to the econometric test approach it is important to inspect the data graphically and at the same time take a look at the summary of statistics of the series. 
+This as well aims to underline the coherence of the aggreagtion procedure and it helps to gain a first insight into the behaviour of the unemployment rate and the google trends indicators over the last years. Figure
+\ref{fig:timeseriesw12} displays the monthly unemployment rate together with the biweekly Google search indices for the W12 window.
+The sample that covers from June 2011 till January 2023, composses different important economic succession such as the Covid 19 crisi or as well the large period of the eurozone discovery. 
+Here the normalization of the google trends actually allows us comparability within the specific keywords but not across keywords.
+By the first glimpse we mwe could assume that the search engine terms reveal a slight co-movement with unemployment. 
+The public sector related searches such as Arbeitsamt and jobbörse, clearly exhibit a downward trend, similar to the decline in unemployment up to 2019, followed, by a temporary increase due ot the panedemic period. 
+The private job-board searches such as Indeed and Stepstone actaully showcase more volatile dynamics, especially indeed displaying an upward moving trend, which by this time also could underline the growing relevance of online platfroms in Germanys labor market rater then a cyclical signas. This long run increase, therefore, captures sturctural change in the job search behaviour, while shorter term fluctuations such as especially represented in the stepstoen time series still convey cyclical information relevant for later nowcasting
+The keyword bewerbung disaplys relative stable but moderate seasonal factors are clearly visible. Whereas this peaks could coincide with perods of labor-market tension rather than with downturns, which indicas that it might react more to job-search actuvty among the employed and clearly to seasonal apploication patterns.
+The seasonal unadjusted unemployment itself follows a slow moving trend with short-term, cyclical and seasonal patters, reaching its pre pandemic low in 2019 and then sharply increasing in 2020 and only gradually recovering thereafter.
+The developments are well captured within the sample window and provide enough variablility for the later following error correction analysis.
+When now taking a look at Figure \ref{fig:timeseriesw34} we see the time series plotted for the variables that capture the search habits in the last two weeks of the prior month and hence right before the publishing of the unemployment rate by the federal employment agency. The Stepstone variable for instance here shows high variability especially with seasonal downward peaks with a slight downward drift after 2016. 
+The spikes seem to be kind of seasonal patterns but it looks consistent with job seekers reacting to worsening labor market expectations.
+It behaves very similar to the later stepstone time series only that the later one is smoother and includes less extreme spikes.
+Indeed here show a clear upward trend, which again udnerlines the adoption of indeed in germany. Especially here it is good to see how local peaks appear during the start of the pandemic. 
+Both overall show this kind of continues upward structural climb, whereas the series in W34prev shows some small more spikes. 
+The jobbörse and as well the arbeitsamt variable both show a strong decline over time yet temporary rises around downturns (2013, 2020) examplify anticipatory behaviour of those approaching official portals before worsening conditions. They could both be seen as classical inflow proxies. The movements in W12 and W34 are quite similar with the difference that earlier ones showacase more spikes. 
+ The Bewerbung variable similarly displays recurring seasonal patterns but remains broadly stable over time, consistent with continuous application-related search behavior rather than cyclical responses.
+Complementing the visual inspection, it is notable that private job-board searches such as Indeed or Stepstone exhibit considerably higher standard deviations than the public-sector or application-related terms. This heterogeneity likely reflects differences in user bases, search motivations, and the underlying structural trends of the respective platforms.\\
+Table~\ref{tab:descshort} also reports mean and standard deviations for the mentioned variables.
+It perfectly matches the visual interpretation underlying how search activity on private platforms, especially Indeed, is by far the most volatile (std.= 40), and hence the most responsive to short term chnages in labor market conditins. 
+Public sector searches such as Jobbörse or Arbeitsamt show smaller average values but entail still a considerable variation. (std. = 16-24). 
+In contrats Stepstone and Bewerbing display lower volatility (std. = 13-14) which is consistent with the smoother trends and seasonal  cycles observed in the Figures~\ref{fig:timeseriesw34} and~\ref{fig:timeseriesw12}. 
+The unemployment rate itself is, as expected, far less variable (std.= 0.72). 
+Overall, the variability patterns confirm that private job-board searches are more dynamic and likely to reflect real-time labor-market sentiment, whereas public-portal and application-related terms respond more intermittently.
+\\
+Moreover as for the interest whether the search indicators and the unemployment itself contains any predictive information about future labor-market conditions we conducted a correlation analysis between each variable and the unemploymnet one month ahead. 
+Here results showcases how searches related to the public sector prortals such as Jobbörse (0.73) and Arbeitsamt (0.72) are positively correlated with susbsequent uneployment, indicating an icrease in these terms tend to precede rising joblessness. Stepstone and Bewerbung show moderate positive correlations (around 0.45–0.59), suggesting some anticipatory component, though their reactions appear less pronounced. 
+Interetsing here Indeed exhibits a tsring negative correlations across both widows consistent with its structural upward trend and countercyclical nature as a proxy for hiring activity rather than job loss. 
+The correlation analysis yields a first glimpse into the heterogenity of the indicators, while public and administrative search terms behave procyclically, private job board searches partly reflect long term digitalization effects.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -253,33 +377,87 @@ Two practical limitations merit acknowledgement. First, the link factors $s_{\,j
 
 \newpage
 % If citing a book with pages: \parencite[p.~80]{greene2000}.
+\section{Tables}
+\subsection{Tables used by Zimmerman}
 
-% ---------- Theory / Methods ----------
-\section{Econometric and Economic Framework}
-% Present the theoretical background and econometric methods.
-% Derivations can be sketched here; long proofs may go to the Appendix.
 
-\subsection{Model}
-% Specify the model(s) you estimate.
-
-\subsection{Estimation and Inference}
-% Explain estimation strategy, assumptions, identification, and inference procedures.
-
-% ---------- Data ----------
-
-% Describe data sources, construction of variables, sample selection and summary statistics.
-% Include well-labeled tables and figures where appropriate.
 \begin{table}[H]
-  \centering
-  \caption{Summary statistics}
-  \label{tab:summary}
-  \begin{tabular}{lrrrr}
-    \toprule
-    Variable & Mean & SD & Min & Max \\
-    \midrule
-    % Fill in
-    \bottomrule
-  \end{tabular}
+\centering
+\caption{Google Trends variables used and rationale (Germany, Web Search, 2011--2023)}
+\label{tab:variables}
+\begin{tabular}{p{2cm} p{5cm} p{7cm}}
+\toprule
+\textbf{Code} & \textbf{Search Terms / Topics} & \textbf{Intended Interpretation} \\
+\midrule
+k1 & \emph{Arbeitsamt, Arbeitsagentur} & Contact with unemployment office; proxy for inflows into registered unemployment. \\[2mm]
+k2 & \emph{Arbeitslosenquote} & News-driven attention to unemployment statistics; measures public awareness rather than direct search. \\[2mm]
+k3 & \emph{Personalberater, Personalberatung} & Job-placement and recruitment services; indicates professional job search or hiring activity. \\[2mm]
+k4 & \emph{Stepstone, Monster, Jobscout, Meinestadt, Jobbörse} & Major job-board brands (public and private) capturing general online job-search intensity. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Tables used by me}
+\begin{table}[H]
+\centering
+\begin{tabular}{p{3cm} p{4cm} p{7cm}}
+\toprule
+\textbf{Variable} & \textbf{Search Topic (Google Trends)} & \textbf{Behavioral Interpretation} \\
+\midrule
+\textbf{Arbeitsamt} & “Arbeitsamt” (topic) & Information seeking related to public employment offices; inflow indicator. \\[2mm]
+\textbf{Jobbörse} & “Jobbörse” (Bundesagentur für Arbeit) & Public job-board use, aligned with official labor-market services. \\[2mm]
+\textbf{Stepstone} & “Stepstone” (topic) & Major private job portal; stable representation of private job-search behavior. \\[2mm]
+\textbf{Indeed} & “Indeed” (topic) & Meta-search aggregator for job listings; reflects modern, consolidated online job-search practice. \\[2mm]
+\textbf{Bewerbung} & “Bewerbung” (topic) & Search activity related to preparing applications or CVs; measures intention to apply. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Table Mean and Standard}
+\begin{table}[H]
+    \centering
+    \caption{Summary of Mean and Standard Deviation for Key Variables}
+    \label{tab:descshort}
+    \begin{tabular}{lrr}
+        \toprule
+        Variable & Mean & Std. Dev. \\
+        \midrule
+        indeed\_W12 & 87.77 & 39.97 \\
+        indeed\_W34prev & 84.64 & 39.47 \\
+        jobbörse\_W12 & 52.13 & 24.17 \\
+        jobbörse\_W34prev & 50.27 & 23.82 \\
+        arbeitsamt\_W34prev & 44.30 & 16.02 \\
+        arbeitsamt\_W12 & 43.89 & 15.67 \\
+        stepstone\_W34prev & 61.71 & 14.01 \\
+        stepstone\_W12 & 63.68 & 13.00 \\
+        bewerbung\_W34prev & 55.66 & 14.36 \\
+        bewerbung\_W12 & 58.56 & 13.83 \\
+        Unemp & 6.00 & 0.72 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\subsection{Table correlations}
+\begin{table}[H]
+    \centering
+    \caption{Lead correlations with next month’s unemployment rate}
+    \label{tab:corrlead}
+    \begin{tabular}{lr}
+        \toprule
+        Variable & Corr(Variable, Unemp$_{t+1}$) \\
+        \midrule
+        stepstone\_W12 & 0.55 \\
+        indeed\_W12 & -0.78 \\
+        jobbörse\_W12 & 0.73 \\
+        arbeitsamt\_W12 & 0.72 \\
+        bewerbung\_W12 & 0.59 \\
+        stepstone\_W34prev & 0.45 \\
+        indeed\_W34prev & -0.78 \\
+        jobbörse\_W34prev & 0.68 \\
+        arbeitsamt\_W34prev & 0.64 \\
+        bewerbung\_W34prev & 0.47 \\
+        \bottomrule
+    \end{tabular}
 \end{table}
 
 % ---------- Empirical Results / Application ----------
@@ -296,9 +474,122 @@ Two practical limitations merit acknowledgement. First, the link factors $s_{\,j
 \subsection{Robustness and Sensitivity}
 % Robustness checks, alternative specifications, diagnostic tests.
 
-% ---------- Conclusion ----------
-\section{Conclusion}
-% Summarize results critically, discuss limitations and implications, and conclude.
+
+
+
+\newpage
+\section{Figures}
+\subsection{Biweekly aggregation}
+Figure~\ref{fig:timing-schematic} illustrates the assignment on a Sunday grid: Sundays falling on or before the 15th are collected into W12\textsubscript{$M$}; Sundays after the 15th of $M{-}1$ are collected into W34\textsubscript{$M-1$} and aligned to $M$.
+
+\subsection{Week w12}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{figures/w12.png}
+    \caption{Monthly Unemployment and Google Search Indicators (W12, 2011–2023)}
+    \label{fig:timeseriesw12}
+\end{figure}
+
+\subsection{Week w34}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{figures/w34.png}
+    \caption{Monthly Unemployment and Google Search Indicators (W34prev, 2011–2023)}
+    \label{fig:timeseriesw34}
+\end{figure}
+
+\subsection{Correlations}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{figures/corr.png}
+    \caption{Lead correlations of Google search indicators with next month's unemployment rate. 
+    Positive values indicate anticipatory search behavior.}
+    \label{fig:leadcorr}
+\end{figure}
+
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[x=0.9cm,y=0.9cm]
+  % Month bars
+  \draw[very thick] (0,0) -- (12,0);
+  \draw (0,0.3) node[anchor=south west]{Month $M\!-\!1$};
+  \draw (6,0.3) node[anchor=south west]{Month $M$};
+  \draw[dashed] (6,-0.7) -- (6,0.7); % boundary between M-1 and M
+  % Mid-month markers
+  \draw[densely dashed] (3,-0.7) -- (3,0.7); % 15th in M-1
+  \draw[densely dashed] (9,-0.7) -- (9,0.7); % 15th in M
+  % Sunday ticks (example layout)
+  \foreach \x in {0.5,1.8,3.2,4.5,5.7,6.9,8.1,9.4,10.6,11.8}{
+    \draw[thick] (\x,0) -- (\x,-0.4);
+    \fill (\x,-0.45) circle (1pt);
+  }
+  % Braces and labels
+  \draw[decorate,decoration={brace,amplitude=6pt}] (3,-1.2) -- (6,-1.2) node[midway,below=7pt]{W34$_{M-1}$ (assigned to $M$)};
+  \draw[decorate,decoration={brace,amplitude=6pt}] (6,-1.2) -- (9,-1.2) node[midway,below=7pt]{W12$_{M}$};
+\end{tikzpicture}
+\caption{Assignment of weekly (Sunday) observations to W34\textsubscript{$M-1$} and W12\textsubscript{$M$} on a Sunday grid. Dashed lines indicate the 15th of each month; the month boundary is shown by the vertical solid line.}
+\label{fig:timing-schematic}
+\end{figure}
+
+\section{Appendix}
+\subsection{Calendar example for the biweekly assignment}
+\label{app:biweekly-example}
+
+This appendix provides a concrete example of how weekly (Sunday) observations are assigned to the biweekly aggregates W12\textsubscript{$M$} and W34\textsubscript{$M-1$} using the ``whole-week'' rule described in the main text. The example avoids the three-Sundays edge case.
+
+Consider $M=\text{June 2022}$. The relevant Sundays around this month are:
+\[
+\{\,\text{2022-05-15},\ \text{2022-05-22},\ \text{2022-05-29},\ \text{2022-06-05},\ \text{2022-06-12},\ \text{2022-06-19},\ \text{2022-06-26}\,\}.
+\]
+The assignment follows the definitions in Eqs.~\eqref{eq:w12set}--\eqref{eq:w34set}:
+\[
+\mathcal{W}^{12}_{\text{Jun22}}
+=
+\{\,\text{2022-06-05},\ \text{2022-06-12}\,\},
+\qquad
+\mathcal{W}^{34,\text{prev}}_{\text{Jun22}}
+=
+\{\,\text{2022-05-22},\ \text{2022-05-29}\,\}.
+\]
+Here, Sundays in the first half of June (days $\le 15$) enter W12\textsubscript{Jun22}. Sundays after the 15th of May (the second half of $M{-}1$) enter W34\textsubscript{May22}, which is aligned forward to June for prediction.
+
+For a stitched weekly index $\{\tilde{x}_{t}\}$, the biweekly aggregates used in Eq.~\eqref{eq:w12w34means} evaluate to simple two-point averages:
+\begin{align*}
+X^{12}_{\text{Jun22}}
+&=
+\frac{1}{2}\Big(\tilde{x}_{\text{2022-06-05}}+\tilde{x}_{\text{2022-06-12}}\Big),\\
+X^{34,\text{prev}}_{\text{Jun22}}
+&=
+\frac{1}{2}\Big(\tilde{x}_{\text{2022-05-22}}+\tilde{x}_{\text{2022-05-29}}\Big).
+\end{align*}
+
+\noindent
+For completeness, the Sundays $\text{2022-06-19}$ and $\text{2022-06-26}$ belong to the \emph{second} half of June and therefore contribute to W34\textsubscript{Jun22}, which is aligned to July ($M{+}1$) in the main biweekly panel.
+
+\subsection{Illustration of Google Trends normalization}
+\label{app:trends-normalization-example}
+
+Google Trends returns search indices scaled from 0 to 100 within the chosen time window and parameter set. 
+For instance, suppose two terms---“Stepstone” and “Indeed”---are queried separately for the same period and region.
+If the true underlying search volumes are in the ratio 5:1, the normalized indices might still show peaks at 100 for both, since each is internally rescaled to its own maximum. 
+Thus, a value of 50 for “Stepstone” and 50 for “Indeed” does not imply equal absolute search interest but indicates that each term reached half of its own peak intensity within the selected window. 
+Because of this internal normalization, absolute comparisons across search terms are not meaningful unless the terms are retrieved jointly in one query.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 \section{safes}
 \subsection{This I still mention in intro}
 \textbf{Carrier}: 
