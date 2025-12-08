@@ -325,52 +325,71 @@ Here especially the keywords put in in the search engine do not always have to m
 \section{Deycriptive statistics and Visual Inspection}
 
 \subsection{Descriptives}
-Before proceeding to the econometric test approach it is important to inspect the data graphically and at the same time take a look at the summary of statistics of the series. 
-This as well aims to underline the coherence of the aggreagtion procedure and it helps to gain a first insight into the behaviour of the unemployment rate and the google trends indicators over the last years. Figure
-\ref{fig:timeseriesw12} displays the monthly unemployment rate together with the biweekly Google search indices for the W12 window.
-The sample that covers from June 2011 till January 2023, composses different important economic succession such as the Covid 19 crisi or as well the large period of the eurozone discovery. 
-Here the normalization of the google trends actually allows us comparability within the specific keywords but not across keywords.
-By the first glimpse we mwe could assume that the search engine terms reveal a slight co-movement with unemployment. 
-The public sector related searches such as Arbeitsamt and jobbörse, clearly exhibit a downward trend, similar to the decline in unemployment up to 2019, followed, by a temporary increase due ot the panedemic period. 
-The private job-board searches such as Indeed and Stepstone actaully showcase more volatile dynamics, especially indeed displaying an upward moving trend, which by this time also could underline the growing relevance of online platfroms in Germanys labor market rater then a cyclical signas. This long run increase, therefore, captures sturctural change in the job search behaviour, while shorter term fluctuations such as especially represented in the stepstoen time series still convey cyclical information relevant for later nowcasting
-The keyword bewerbung disaplys relative stable but moderate seasonal factors are clearly visible. Whereas this peaks could coincide with perods of labor-market tension rather than with downturns, which indicas that it might react more to job-search actuvty among the employed and clearly to seasonal apploication patterns.
-The seasonal unadjusted unemployment itself follows a slow moving trend with short-term, cyclical and seasonal patters, reaching its pre pandemic low in 2019 and then sharply increasing in 2020 and only gradually recovering thereafter.
-The developments are well captured within the sample window and provide enough variablility for the later following error correction analysis.
-When now taking a look at Figure \ref{fig:timeseriesw34} we see the time series plotted for the variables that capture the search habits in the last two weeks of the prior month and hence right before the publishing of the unemployment rate by the federal employment agency. The Stepstone variable for instance here shows high variability especially with seasonal downward peaks with a slight downward drift after 2016. 
-The spikes seem to be kind of seasonal patterns but it looks consistent with job seekers reacting to worsening labor market expectations.
-It behaves very similar to the later stepstone time series only that the later one is smoother and includes less extreme spikes.
-Indeed here show a clear upward trend, which again udnerlines the adoption of indeed in germany. Especially here it is good to see how local peaks appear during the start of the pandemic. 
-Both overall show this kind of continues upward structural climb, whereas the series in W34prev shows some small more spikes. 
-The jobbörse and as well the arbeitsamt variable both show a strong decline over time yet temporary rises around downturns (2013, 2020) examplify anticipatory behaviour of those approaching official portals before worsening conditions. They could both be seen as classical inflow proxies. The movements in W12 and W34 are quite similar with the difference that earlier ones showacase more spikes. 
- The Bewerbung variable similarly displays recurring seasonal patterns but remains broadly stable over time, consistent with continuous application-related search behavior rather than cyclical responses.
-Complementing the visual inspection, it is notable that private job-board searches such as Indeed or Stepstone exhibit considerably higher standard deviations than the public-sector or application-related terms. This heterogeneity likely reflects differences in user bases, search motivations, and the underlying structural trends of the respective platforms.\\
-Table~\ref{tab:descshort} also reports mean and standard deviations for the mentioned variables.
-It perfectly matches the visual interpretation underlying how search activity on private platforms, especially Indeed, is by far the most volatile (std.= 40), and hence the most responsive to short term chnages in labor market conditins. 
-Public sector searches such as Jobbörse or Arbeitsamt show smaller average values but entail still a considerable variation. (std. = 16-24). 
-In contrats Stepstone and Bewerbing display lower volatility (std. = 13-14) which is consistent with the smoother trends and seasonal  cycles observed in the Figures~\ref{fig:timeseriesw34} and~\ref{fig:timeseriesw12}. 
-The unemployment rate itself is, as expected, far less variable (std.= 0.72). 
-Overall, the variability patterns confirm that private job-board searches are more dynamic and likely to reflect real-time labor-market sentiment, whereas public-portal and application-related terms respond more intermittently.
-\\
-Moreover as for the interest whether the search indicators and the unemployment itself contains any predictive information about future labor-market conditions we conducted a correlation analysis between each variable and the unemploymnet one month ahead. 
-Here results showcases how searches related to the public sector prortals such as Jobbörse (0.73) and Arbeitsamt (0.72) are positively correlated with susbsequent uneployment, indicating an icrease in these terms tend to precede rising joblessness. Stepstone and Bewerbung show moderate positive correlations (around 0.45–0.59), suggesting some anticipatory component, though their reactions appear less pronounced. 
-Interetsing here Indeed exhibits a tsring negative correlations across both widows consistent with its structural upward trend and countercyclical nature as a proxy for hiring activity rather than job loss. 
-The correlation analysis yields a first glimpse into the heterogenity of the indicators, while public and administrative search terms behave procyclically, private job board searches partly reflect long term digitalization effects.
+Before proceed with the unit-root and cointegration analysis, this section aims a structured look at the series.
+The aim here is concentrates towards (i) verifying that the biweekly aggregation is coherent, 
+(ii) documenting broad comovement patterns between Google search indicators and unemployment, and (iii) motivating which simple correlations are informative for later ECM/VECM work.
+It will be interesting to see whether the W12/W34 design which has been extracted from Zimmerman shows any differences at first view as W34$_{M-1}$capture the two weeks prior to release and W12$_M$ cover the two weeks after.
+This analysis hopes to gain additonal knowledge to check Zimmermans claim that the activities in W34$_{M-1}$ actually yield more predictive power than those in the later intervall W12$_M$, even though this period is closer to the announcement then the foremer (this is a cite).\\
+The figures~\ref{fig:timeseriesw12} (W12) and \ref{fig:timeseriesw34} (W34$_{\text{prev}}$) plot the unemployment rate alongside the biweekly Google indices.
+From the Figures several regularities emerge. First Public-portal terms (Arbeitsamt, Jobbörse) trend downward through 2019 and show a slight peak at 2020 broadly consitent with the decline in unemployment prior to the pandemic and the subsequent shock. Shorter-run movements come visibly with unemployment, also dring the Covid-19 period.\\
+When it comes to private job-board terms (Indeed, Stepstone) we have a slightly different picture. 
+Indeed exhibits a pronounced upward drift over the sample, reflecting the structural diffusion of the platform in Germany.
+Stepstone at first is more stationary-looking with some cyclical variability. 
+Hence, as first thought for Indeed, a level correlation with unemployment can be misleading if the common variation is driven by trend rather than cycle.  \\
+The Bewerbung series displays marked seasonality (regular peaks in typical application months) and only a weak trend, which is consistent with application timing rather than sharp cyclical responses.\\
+When comparing W12 with W34$_{\text{prev}}$, we could say taht at the medium-run horizon, W12 and W34$_{\text{prev}}$ convey very similar patterns, across all indicators, as the same local turning points and the same broad co-movement with unemployment are visible in both windows.
+The main difference is the volatility. 
+W34$_{\text{prev}}$ shows more frequent and larger weekly spikes. This is expected for three reasons:
+(i) the W34$_{\text{prev}}$ window sits immediately before the monthly press release, a period with elevated media reporting and expectation pieces that can briefly elevate search activity even before the number is known.
+(ii) weekly Google indices are normalized within finite windows, so local maxima are clipped at 100 and can create spike-like features;
+(iii) our whole-week assignment to half-months means some month boundaries admit two or three weekly observations in the same subperiod, amplifying visible week-to-week variation.
+Overall, the variability pattern supporst using level wit deterministic terms to accomodate structural drifts and, in robustness checks to purge seasonality. 
+\subsection{Correlations}
+Because several search series contain trends and strong seasonality, we report three complementary correlation views that are informative yet conservative for time-series work.
+The contemporaneous correlation in levels which captures whether search intensity co-moves with unemployment at the monthly horizon showcases in our sample ublic-portal series (Arbeitsamt, Jobbörse) display relatively high positive correlations (roughly $0.7$--$0.8$),Stepstone is moderate ($\approx 0.5$--$0.6$), and Indeed is strongly negative ($\approx -0.7$ to $-0.8$), this reflexts its structural rise and association with hiring rather than separations (Figures~\ref{fig:timeseriesw12}--\ref{fig:timeseriesw34}). Patterns are similar in W12 and W34$_{\text{prev}}$.\\
+A first glance at the lead correlations in levels (one month ahead $\corr(X_t, U_{t+1})$), provides a first glance at potential nowcasting content.
+The ranking nevertheless remians similar public-portal terms retain positive lead correlations, Stepstone is modestly positive, and Indeed remains negative. Differences between W12 and W34$_{\text{prev}}$ are small; 
+if anything, W12 sometimes loads a bit more on contemporaneous reactions to the release, while W34$_{\text{prev}}$ sometimes shows slightly higher variation due to pre-release attention spikes. These differences are not large enough to be diagnostic by themselves.\\
+Finally the Contemporaneous correlation in year-over-year differences ($\corr(\Delta_{12}X_t, \Delta_{12}U_t)$.) This removes seasonal patterns and most deterministic drift. 
+Results here remain positive for public portal series and weaker for Stepstone. 
+Indeed’s correlation becomes closer to zero (or modestly negative), consistent with the notion that its strong level trend is structural rather than cyclical.
+ This view is the safest descriptive statistic to report before ECM/VECM, because it is least prone to spurious correlation from trends.\\
+ We intentionally do not over-interpret small differences between W12 and W34$_{\text{prev}}$ in these correlations. The descriptive evidence indicates broadly similar information content across windows, with W34$_{\text{prev}}$ exhibiting more high-frequency noise. Whether one window materially outperforms the other is therefore an empirical question to be settled in the Johansen/ECM framework with out-of-sample evaluation.
+\subsection{Interim takeaways for the econometric setup}
+First of all, both W12 and W34$_{\text{prev}}$ track the medium-run path of unemployment; the main difference is that W34$_{\text{prev}}$ is noisier with more spikes, plausibly due to pre-release media attention, Google’s within-window normalization, and whole-week assignment at month boundaries.
+The public portal terms are procyclical; private-board terms are heterogeneous: Indeed is dominated by structural adoption (negative level correlation with unemployment), while Stepstone shows clearer cyclical variation.
+In order to protect against spurious correlation, subsequent models should allow for deterministic components (linear trend or breaks where appropriate) and verify stationarity on differences (ADF), followed by cointegration testing (Johansen) and an ECM/VECM that admits distinct short- and long-run channels.\footnote{This mirrors the spirit of \citet{Zimmermann2009} but replaces their implicit assumptions on integration/cointegration with explicit pre-testing and a Johansen/VECM specification.}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+\section{The Augmented Dickey Fuller test}
+In order to later test for cointegration relationships using the Johansen Trace test and in case of finding them modeling with an Vector error correction model we need to perform the Augmented Dickey Fuller test, in oder to see whether the series is nonstationary in levels and exhibits an unit root but is stationary in first differences.
+It is important to mention here that the plane Dickey Fuller test considers the case of an AR(1). Nevertheless as we here have macroeconomic data especially the unemployment rate it is common that the datas residuals are serially correlated. The Augmented Dickey Fuller test fixes this nevertheless by adding lagged differences. 
+.\\
+The ADF regression with $p$ augmenting lags and deterministic component $d_t$ is
+\begin{equation}
+\Delta y_t = \alpha + \delta t + \phi\, y_{t-1}
+            + \sum_{i=1}^{p}\psi_i\, \Delta y_{t-i} + \varepsilon_t,
+\label{eq:adf}
+\end{equation}
+where $\Delta$ denotes the first difference and with that the number of lags included in the model. 
+For the test purpose the Lag length in the ADF tests is selected by AIC with an initial upper bound of 12 which is to be seen standard for monthly data, as it captures yearly autocorrelation
+The critical values are used from MacKinnon (2010) as implemented in statsmodels.
+Important is that I differentiate the respective different Augemented Dickey Fuller test by eyeballing at the series. For every respective Dickey FUller test hence $(\alpha,\delta)$ are included or excluded according
+to the deterministic specification. The purpose of this individual allignment is that it is necessary to choose the correct testing case in order to obtain enough power in order to being able to reject a false null hypothesis. The test case needs to be chosen correctly in order that the case has enough power to actually detect whetehr there might be a constant or even a constant and a drift in the series.\\
+Hence I test : 
+\begin{itemize}
+    \item $H_0\!:\, \phi = 1$ (unit root) against 
+    \item $H_1\!:\, \phi < 0$
+\end{itemize}
+As mentioned theree cases are considered for the unit root tests in levels: (i) \textbf{nc} (no constant, no trend: $\alpha=\delta=0$),
+(ii) \textbf{c} (drift: $\delta=0$), and (iiiI) \textbf{ct} (drift+trend).
+The results of the Augmented Dickey Fuller test for the series in levels can be seen in Table \ref{tab:adf_levels}.
+The cases for the repsective cases are mainly chosen by eyeballing. For the stepstone variable we choose for the weeks12 the constant case as it looks like the series is fluctuating over a nonzero mean and the previous stepstone series looks similar as for this reason I choose the test scenario. Indeed time series on the other hand exhibits an upward moving trend in the w12 version but as well in the previous w34 version. For this reason I will be choosing include the trend case to have enough power for this test. For jobbörse we see a similar pattern as here both series exhibit downward moving trends which as a consequence I choose the trend case for those two series. Arbeitsamt equally as Jobbörse as well exhibit a downard trend which is why I am choosing the trend case. Even if in the Bewerbung W12 variable there is this strong seasonal pattern I will as well for this variable choose the trend case as well as for it W34prev counterpart. The downward moving trend is clearly visible. Finally for the unemployment variable forst it appears that a downward moving trend is observable but on second sight the series is clearly mobving up for what I will be choose the constant case.
+Looking at the critical values an din this connection the p values of the soeres in table \ref{tab:adf_levels}
+we cannot reject the nullhypothesis of an unit root for the series.
+Thats why on a second glimpse we will take a look at the frst differences of teh data to see how they look like. 
+For the first differences we will choose the first case of the Augemented Dickey Fuller test. EVen though in practice seldomly used that case pictures the behaviour of our first difference data. The first differences of our series always show the behaviour of flcutuating over a zero mean. Furtheremore I calculated the mean of all the first difference series and conducted a test test in order to check whther the non constant case is justified. All the p values of the means in levels are extremly high. Thats why I can reject the nullhypothesis of mean = 0. Thats why the series clearly fluctuate around a nonzero mean.
+So even though the case is rarely used in practice due to the power of this test, I believe that my security checks and the eyeballing seem convincing enough to make an case one of the Augemented Dickey Fuller test.
+The results shown in table \ref{tab:adf_diff_nc} clearly here show how all variables are stationary in first differences and hences we can move over to check for cointegrating relationships.
 
 
 
@@ -460,16 +479,58 @@ k4 & \emph{Stepstone, Monster, Jobscout, Meinestadt, Jobbörse} & Major job-boar
     \end{tabular}
 \end{table}
 
+\subsection{Table DF levels}
+\begin{table}[htbp]
+\centering
+\caption{Augmented Dickey--Fuller tests in levels (monthly data, 2011M6--2023M1)}
+\label{tab:adf_levels}
+\begin{tabular}{lcccccc}
+\hline\hline
+Series & Det. spec & Lags & ADF statistic & 5\% crit.\ value & p-value & Reject $H_0$ at 5\%? \\
+\hline
+stepstone\_W12        & c  & 12 & -1.4933 & -2.8846 & 0.5368 & No \\
+indeed\_W12           & ct & 12 & -1.8816 & -3.4456 & 0.6641 & No \\
+jobbörse\_W12         & ct & 12 & -3.1492 & -3.4456 & 0.0950 & No \\
+arbeitsamt\_W12       & ct & 11 & -1.7611 & -3.4454 & 0.7232 & No \\
+bewerbung\_W12        & ct & 12 & -2.0718 & -3.4456 & 0.5619 & No \\
+stepstone\_W34prev    & c  & 12 & -1.2275 & -2.8846 & 0.6616 & No \\
+indeed\_W34prev       & ct & 12 & -1.4060 & -3.4456 & 0.8592 & No \\
+jobbörse\_W34prev     & ct & 12 & -3.0425 & -3.4456 & 0.1206 & No \\
+arbeitsamt\_W34prev   & ct & 12 & -2.0211 & -3.4456 & 0.5899 & No \\
+bewerbung\_W34prev    & ct & 12 & -1.9437 & -3.4456 & 0.6317 & No \\
+Unemp                 & c  & 12 & -2.2101 & -2.8846 & 0.2026 & No \\
+\hline\hline
+\end{tabular}
+\end{table}
+
+\subsection{Table first differences ADF}
+\begin{table}[htbp]
+\centering
+\caption{ADF tests for first differences (regression: no constant, monthly data 2011M6--2023M1)}
+\label{tab:adf_diff_nc}
+\begin{tabular}{lcccccc}
+\hline\hline
+Series & Lags & ADF statistic & 5\% crit.\ value & p-value & Reject $H_0$ at 5\%? \\
+\hline
+stepstone\_W12        & 11 & -3.2242 & -1.9433 & 0.0013 & Yes \\
+indeed\_W12           & 12 & -2.4965 & -1.9433 & 0.0121 & Yes \\
+jobbörse\_W12         & 11 & -3.0608 & -1.9433 & 0.0022 & Yes \\
+arbeitsamt\_W12       & 10 & -5.5334 & -1.9433 & 0.0000 & Yes \\
+bewerbung\_W12        & 12 & -3.4875 & -1.9433 & 0.0005 & Yes \\
+stepstone\_W34prev    & 11 & -4.0136 & -1.9433 & 0.0001 & Yes \\
+indeed\_W34prev       & 12 & -2.2670 & -1.9433 & 0.0225 & Yes \\
+jobbörse\_W34prev     & 11 & -2.9936 & -1.9433 & 0.0027 & Yes \\
+arbeitsamt\_W34prev   & 12 & -3.6222 & -1.9433 & 0.0003 & Yes \\
+bewerbung\_W34prev    & 11 & -5.1217 & -1.9433 & 0.0000 & Yes \\
+Unemp                 & 12 & -2.3236 & -1.9433 & 0.0194 & Yes \\
+\hline\hline
+\end{tabular}
+\end{table}
+
+
 % ---------- Empirical Results / Application ----------
 \section{Application and Results}
-% Present the empirical application, main results, and robustness checks.
-% Place figures/tables near where they are discussed.
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=.85\linewidth]{figures/placeholder.pdf}
-  \caption{Descriptive or results figure (replace with your graphic).}
-  \label{fig:results}
-\end{figure}
+
 
 \subsection{Robustness and Sensitivity}
 % Robustness checks, alternative specifications, diagnostic tests.
