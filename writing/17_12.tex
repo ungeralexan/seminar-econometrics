@@ -1,0 +1,910 @@
+\documentclass[12pt,a4paper]{article}
+
+% ---------- Packages & basic formatting ----------
+\usepackage[a4paper,margin=2.5cm]{geometry}   % sensible margins for A4
+\usepackage{setspace}                         % for 1.5 spacing
+\onehalfspacing
+\usepackage{microtype}       
+\usepackage[english]{babel} % or german, ngerman, etc.
+\usepackage[english]{babel}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{graphicx}
+\usepackage{float}                            % to place figures/tables "here" if needed
+\usepackage{booktabs}                         % nicer tables
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{hyperref}
+\usepackage{csquotes}   
+
+
+% recommended with bibtex
+
+
+\usepackage[round,authoryear]{natbib} % round = (Smith, 2020); authoryear = Smith (2020)
+% --- TikZ figure setup ---
+\usepackage{tikz}
+\usetikzlibrary{decorations.pathreplacing} % for the braces
+\usetikzlibrary{calc}                      % optional, helps with coordinates
+\usepackage{float}                         % for [H] placement specifier
+
+
+
+% Hyperlinks last
+\usepackage[hidelinks]{hyperref}
+\hypersetup{
+  pdftitle={Seminar Thesis Title},
+  pdfauthor={Your Name},
+  pdfsubject={S510/S520 – Master Seminar on Econometrics},
+  pdfcreator={LaTeX}
+}
+
+% ---------- Title page ----------
+\newcommand{\university}{Eberhard Karls Universität Tübingen}
+\newcommand{\faculty}{Faculty of Economics and Social Sciences}
+\newcommand{\seminar}{S510/S520 – Master Seminar on Econometrics}
+\newcommand{\chairA}{Chair of Statistics, Econometrics and Quantitative Methods}
+\newcommand{\chairB}{Chair of Statistics, Econometrics and Empirical Economics}
+\newcommand{\supervisor}{Alexander Reining}
+\newcommand{\authorname}{Alexander Unger}
+\newcommand{\matricno}{6946672}
+\newcommand{\emailaddr}{youremail@stud.uni-tuebingen.de}
+\newcommand{\thesistitle}{Using Google Search Data to Nowcast German Unemployment}
+\newcommand{\submissiondate}{January 9, 2026}
+
+\begin{document}
+\begin{titlepage}
+  \centering
+  {\large \university \par}
+  \vspace{2mm}
+  {\large \faculty \par}
+  \vspace{18mm}
+  {\large \chairA\\[2mm]\chairB\par}
+  \vspace{18mm}
+  {\Large \textbf{\seminar}\par}
+  \vspace{18mm}
+  {\LARGE \textbf{\thesistitle}\par}
+  \vspace{18mm}
+  \begin{tabular}{ll}
+    Author:      & \authorname \\
+    Matriculation No.: & \matricno \\
+    E-mail:      & \emailaddr \\
+    Supervisor:  & \supervisor \\
+    Submission date: & \submissiondate \\
+  \end{tabular}
+  \vfill
+\end{titlepage}
+\pagenumbering{Roman}
+
+
+
+\section*{Abstract}
+This seminar thesis evaluates whether Google search data can improve nowcasts of German unemployment. Weekly Google Trends indicators for 2011–2023 are used as high-frequency signals and are aligned to the monthly unemployment measurement process by decomposing them into an early-month component and a previous-month late component shifted forward. 
+Nowcasts over 2019–2023, including the COVID-19 shock, are produced using an expanding-window scheme and assessed via RMSE, MAE, and Diebold–Mariano tests. Forecast performance is compared across an AR benchmark, biweekly ARX models with Google search predictors, and mixed-frequency U-MIDAS regressions that incorporate weekly search changes directly. Results indicate strong persistence in german unemployment changes and only modest incremental predictive content in search indicators beyond autoregressive dynamics. U-MIDAS captures slightly more intra-month variation than biweekly ARX specifications but does not materially outperform the AR benchmark, and W12 and W34prev are statistically indistinguishable in forecast accuracy.
+\newpage
+\tableofcontents
+\newpage
+\listoffigures % remove if you have no figures
+\newpage
+\listoftables  % remove if you have no tables
+\newpage
+\pagenumbering{arabic}
+
+\section{Introduction}
+Timely and reliable macroeconomic indicators are essential for economic research institutions and policymakers, particularly central banks, as they assess the stance of fiscal and monetary policy \citep{simoni, BANBURA2013195}.
+However, in many countries key statistics, most notably unemployment, are published only with considerable delay after the reference period.
+For labor-market conditions, this creates an informational gap precisely when short-term dynamics matter most, for example during sharp turning points such as the COVID-19 shock \citep{covid}. In such environments, reliance on low-frequency official releases can hinder the rapid assessment of current economic conditions. 
+\\
+These challenges stem largely from the nature of traditional data collection.
+Survey-based and administrative statistics are often resource-intensive and therefore cannot capture economic dynamics in real time.
+\\
+As a result, researchers have increasingly turned to high-frequency, unconventional data sources to complement official statistics and support nowcasting, including job-posting data, mobility indicators, and search-engine activity \citep{BARBAGLIA20231548}.
+Compared with traditional macro series, these digital traces are available at higher frequency and with minimal publication delay.
+\\
+Among these sources, search-engine queries are particularly attractive because they capture information-seeking behavior in near real time \citep{varian}.
+In the context of unemployment, individuals may search for terms related to job loss, benefits, or job finding before these conditions become visible in aggregate statistics. Aggregated across users, such search intensity can therefore serve as a high-frequency proxy for labor-market stress and expectations. At the same time, search data are noisy, as volumes may react to media coverage, institutional changes, or seasonality, and the timing within the month may be critical for their usefulness in predicting monthly unemployment outcomes.
+Against this background, a growing empirical literature has examined whether digital search behavior contains predictive information for macroeconomic outcomes.\\
+One of the earliest contributions to this line of research comes from \citet{ettrege} who examined whether search volumes from WordTracker’s metasearch engine could anticipate U.S. unemployment. Although their short-term signals were noisy, they showed that smoothed, longer-run trends in job-related searches were strongly associated with future unemployment. This early work established the core intuition that aggregated online search activity captures evolving labor-market expectations before they appear in official data releases.\\
+Building on this foundation, \citet{Askitas} conducted the first systematic attempt to quantify the informational content of Google search queries for german macroeconomic forecasting. Using German data from 2004–2009, they demonstrated that job-related searches reliably lead unemployment releases by several weeks. Their results established Google Trends data as a practical, publicly available high-frequency proxy for labor-market stress.\\
+A major conceptual advance came from \citet{varian}, who extended the use of GT data beyond unemployment to a broad set of macroeconomic indicators. Rather than focusing on multi-step forecasting, they emphasized nowcasting, using contemporaneous search information to fill in publication delays. Their autoregressive models augmented with search volumes consistently improved out-of-sample performance, especially around turning points.\\
+Subsequent research tested the robustness of this approach across different economic environments. For instance, \citet{carrier} showed that search-based indices can predict automobile sales in Chile, improving both in-sample and out-of-sample accuracy while capturing market reversals earlier than official statistics. 
+\\
+ \citet{D'Amuri2010Google} evaluate whether a Google Job Search Index improves U.S. unemployment forecasts relative to traditional indicators. Comparing a large set of autoregressive benchmark models with search-augmented specifications and conducting an extensive forecast evaluation, they find that models including Google search variables outperform traditional benchmarks in the majority of U.S. states.
+\\
+At the same time, research broadened beyond labour markets: \citet{goel} use search data from Yahoo! to predict consumer demand for entertainment products, showing that search intensity can strongly correlate with future sales, particularly in rapidly evolving markets.\\
+Beyond large Western economies, \citet{check} examine the link between job-related Google searches and unemployment rates for the Visegrad Group countries. Their nowcasting framework nests a simple autoregressive specification in unemployment changes and an augmented model that includes several lags of changes in search intensity. In a pseudo out-of-sample exercise for 2012–2013, the Google-augmented model significantly outperforms the benchmark for the Czech Republic and Hungary, while results are mixed for Poland and the baseline model even dominates for Slovakia. These findings highlight that the predictive value of search indicators can be substantial even for small and medium-sized economies, but is far from universal.
+\\
+More recently, studies have increasingly combined high-frequency search data with mixed-frequency econometric techniques, enabling real-time estimation of monthly figures using daily or weekly information. For instance, \citet{COSTA2024101963} propose a MIDAS framework for nowcasting Portuguese unemployment using daily GT series, overcoming historical GT sampling constraints through overlapping-window collection and temporal disaggregation. Their results show that daily GT predictors substantially outperform both monthly GT predictors and benchmark models, especially during economically volatile periods such as COVID-19. \\
+Despite the growing evidence on search-based forecasting, nowcasting unemployment remains challenging
+Unemployment is a highly persistent stock variable, and in Germany its measurement and publication process fixes reference dates early in the month and aggregates information over distinct intra-month windows.
+As a result, the timing of high-frequency indicators relative to the official measurement window is critical for their predictive usefulness. 
+At the same time, few recent studies revisit the German labour market using up-to-date Google Trends data, particularly during recessionary periods such as the COVID-19 shock.\\
+This seminar paper addresses this gap by evaluating whether high-frequency Google search indicators improve pseudo real-time nowcasts of German unemployment.
+It revisits the German setting of \citet{Askitas} by adopting their timing-aware biweekly aggregation framework.
+To assess whether aggregation discards relevant information, the paper complements the biweekly approach with mixed-frequency econometric methods, as unrestricted MIDAS regressions that allow weekly search indicators to enter monthly unemployment equations directly.
+Using data for 2011--2023, the empirical analysis focuses on a pseudo out-of-sample nowcasting exercise for 2019--2023, which includes the COVID-19 shock.
+While the empirical design follows \citet{Askitas} timing intuition, the present analysis uses updated Google Trends vintages and a longer sample (2011–2023), and complements the biweekly framework with mixed-frequency MIDAS models; results are therefore not intended as a mechanical replication.\\
+Within this framework, the paper addresses three questions. First, do biweekly Google search indicators improve nowcasts of German unemployment relative to a simple autoregressive benchmark? Second, does biweekly aggregation discard useful predictive information contained in the underlying weekly data, as assessed by comparison to unrestricted MIDAS specifications? Third, following \citet{Askitas}, is early-month or previous-month search activity more informative for nowcasting, particularly during the COVID period?\\
+The remainder of the paper is structured as follows. Section 2 describes the data and construction of the Google Trends indicators. Section 3 presents descriptive statistics and time-series properties. Section 4 outlines the econometric models and nowcasting framework. Section 5 reports the empirical results and discusses the findings. Section 6 concludes.
+
+
+
+
+\section{Data}
+\subsection{German Official unemployment series}
+\label{sec:21}
+The target variable of this seminar is the monthly, seasonally unadjusted unemployment rate published by the \textit{Bundesagentur für Arbeit}. Following \citet{Askitas}, I use the \textit{Arbeitslosenquote bezogen auf alle zivilen Erwerbspersonen}, which measures unemployment relative to the civilian labour force and is reported in percentage points.\\
+Using the unadjusted series is deliberate. Seasonal patterns such as winter layoffs, school-to-work transitions or holiday effects carry information that may be reflected in high-frequency search activity. Removing these variations ex ante would risk discarding precisely the fluctuations Google Trends may capture. Seasonality will later be controlled for explicitly through monthly dummy variables rather than through pre-adjustment.\\
+A key institutional feature is the timing of unemployment measurement and publication. Although figures are released at the end of the month, the underlying measurement reflects labour-market information collected up to a fixed intra-month reference date. This lag creates a natural nowcasting environment, as when forming a nowcast for month $M$, the latest available official observation typically refers to month $M-1$.
+Search data from different parts of the month may therefore contain distinct information sets depending on whether they precede or follow the publication of the previous unemployment number.\\
+The sample covers May 2011 to January 2023. The start date is chosen to ensure comparability of Google Trends indices and to avoid early periods affected by platform changes and methodological revisions in pre-2011 search data. The window includes several distinct macroeconomic phases, notably the COVID-19 shock, providing a demanding environment for evaluating pseudo out-of-sample nowcast performance. While this choice precludes an exact replication of the original 2004--2009 sample in \citet{Askitas}, it yields a more comparable and policy-relevant setting for the present analysis.
+
+
+\subsection{Google Trends Data}
+Google Trends provides anonymized indicators of search activity by reporting, for each keyword and region, a 0–100 index of relative search intensity. The index does not reflect absolute search volumes but instead, it is normalized such that 100 corresponds to the peak share of that keyword within the selected time window, and all other values express proportions of that peak. As a consequence, the data measure relative interest and series for different keywords are not comparable in levels unless transformed or standardized.\\
+A second implication is that Google internally relies on sampled query data. Repeating the same download on different days can therefore yield slightly different values \citep{carrier}.
+While some studies mitigate this by averaging multiple repeated downloads, I rely on single downloads due to time constraints.\\
+Because the index is normalised within each individual query and time window, Google Trends series must be preprocessed before they can be used in time-series models that require consistent scaling across long samples, such as the ARX and unrestricted MIDAS regressions employed in this study.
+The next subsection explains the construction of a longer, consistently scaled series by stitching overlapping Google Trends queries.
+
+
+\subsection{Creating the Google Trend series}
+Google Trends provides weekly data only for horizons of about five years with longer requested spans returning only monthly indices (see Appendix~\ref{app:gt_frequency}). To obtain a continuous weekly series for 2011–2023, I will use a stitching approach. In this procedure, multiple overlapping time windows are downloaded, and later windows are rescaled to ensure consistency with earlier ones over their overlap.
+% Maybe here you need a citation
+Let \(x_t^{(j)}\) denote the weekly Google Trends index for a given keyword in window \(j\) at week \(t\), and \(x_t^{(j+1)}\) the corresponding index from the adjacent window \(j+1\) over their overlapping period \(\mathcal{T}_{j,j+1}\). For any two adjacent windows \(j\) and \(j+1\), a scaling factor is computed as the median ratio of their overlapping weekly values,
+\begin{equation}
+s_{\,j{+}1 \leftarrow j}
+\;=\;
+\operatorname{median}
+\Big\{\
+\frac{x^{(j)}_{t}}{x^{(j+1)}_{t}}
+:\; t \in \mathcal{T}_{j,j+1}
+\Big\},
+\label{eq:medianratio}
+\end{equation}
+and the later window is multiplied by this factor before concatenation.\footnote{In practice, I compute the median ratio only over overlapping weeks where both indices are strictly positive, to avoid distortions from zero values.}
+This procedure reconciles the window-specific 0–100 normalisations and yields a coherent weekly series for each keyword. 
+ While the resulting series remains a relative index, it is internally consistent over time, which is essential both for the construction of biweekly aggregates and for the mixed-frequency MIDAS regressions. A detailed illustration of the stitching procedure for one keyword is provided in Appendix~\ref{app:stitching}.
+
+
+
+\subsection{Biweekly aggregation approach}
+\label{sec:biweekly_aggregation}
+Building on the institutional timing described in Section~\ref{sec:21}, I construct biweekly Google Trends indicators that proxy two distinct intra-month information sets relevant for nowcasting German unemployment. Following \citet{Askitas}, the key observation is that the unemployment rate for month $M{-}1$ is published at the end of month $M{-}1$, i.e.\ between a late window in month $M{-}1$ and an early window in month $M$. Consequently, search activity observed early in month $M$ may already reflect reactions to the newly released figure $U_{M-1}$ for example due to media coverage or individual responses to newly announced labour-market figures, whereas search activity observed late in month $M{-}1$ cannot respond to $U_{M-1}$ and is influenced only by earlier information (such as $U_{M-2}$). Appendix ~\ref{fig:biweekly} summarizes the timing and the construction of the two windows.
+To operationalize these two information sets for a given reference month $M$, I construct two half-month aggregates from the weekly series:
+\begin{itemize}
+    \item \textbf{$W12_M$}: the average of weekly search indices whose Sunday timestamp falls in days 1--15 of month $M$. This window occurs \emph{after} the publication of $U_{M-1}$ and overlaps with the measurement period for month $M$.
+    \item \textbf{$W34_{M-1}$}: the average of weekly search indices whose Sunday timestamp falls in days 16--end of month $M{-}1$, aligned forward to month $M$. This window precedes the publication of $U_{M-1}$ and therefore cannot be mechanically influenced by that release.
+\end{itemize}
+Unlike \citet{Askitas}, who proportionally split weekly observations at intra-week boundaries to construct half-month aggregates, I assign each weekly observation to the half-month containing its Sunday timestamp.
+This avoids mechanically splitting individual weekly observations across months and yields a simple, reproducible mapping from the weekly series to biweekly indicators.
+The resulting biweekly panel spans June 2011 to January 2023, yielding $T = 140$ monthly observations. This horizon provides sufficient degrees of freedom for time-series estimation while allowing a clear separation between \emph{earlier} and \emph{later} search signals relative to each reference month. 
+
+
+
+\subsection{Google Trend variable selection}
+The predictive value of search data depends critically on the choice of keywords \citep{varian}. 
+Google Trends reflects behavioural intentions rather than economic quantities, 
+and unsuitable keywords can introduce news-driven noise or capture unrelated dynamics. 
+It is therefore important to select search terms that plausibly proxy job-search and unemployment-related behaviour. \\
+In the original study of \citet{Askitas}, search behaviour was grouped into four conceptual categories: (k1) contacts with the unemployment office, (k2) interest in the unemployment rate itself, (k3) activity around personnel consulting, and (k4) searches related to job boards. In this paper, I focus on a smaller, coherent set of modern search terms that align with the original k1, k3 and k4 concepts while deliberately excluding k2-type keywords, such as \textit{Arbeitslosenquote}, that primarily capture attention to published statistics rather than job-search behaviour.\\
+The term \textit{arbeitsamt} remains a colloquial and widely used expression associated with unemployment services. It likely captures information seeking related to registration, benefit claims and interactions with the public employment service, and thus serves as a proxy for impending or actual inflows into unemployment. This term corresponds closely to the original k1 category.\\
+The keyword \textit{Jobbörse} refers to the official online job portal of the Federal Employment Agency. Search activity for this term reflects use of a central institutional job-search channel that is tightly connected to unemployment services. It is part of the k4 job-board category as it represents a conceptually clean public-platform signal over the 2011--2023 period.\\
+The terms \textit{stepstone} and \textit{indeed} represent a share of the dominant private online job-search platforms in Germany after 2010. Including them captures a substantial share of modern job-search behaviour. These keywords update the original k4 category to a more current set of platforms while avoiding earlier job-board brands that have since lost relevance.\\
+Finally, the keyword \textit{bewerbung} (job application) encompasses searches related to writing cover letters, preparing CVs and the application process more generally. It reflects a broader job-search intention at the employment transition margin and is behaviourally related to the k3 category in \citet{Askitas}. Together, this set of five keywords is intended to capture both interactions with public employment services and modern online job-search activity without relying on purely news-driven terms.
+
+
+
+
+
+
+\subsection{Restrictions}
+Before turning to the models and the methology, it is important to acknowledge several limitations of Google Trends data that affect interpretation and forecasting accuracy.\\
+First, Google Trends is based on sampled query data rather than the full universe of searches, so identical requests on different days can yield slightly different series \citep{carrier}. In addition, Google applies an internal thresholding rule for low-volume queries; although the exact cutoff is unknown, it may suppress or smooth observations in periods of weak search intensity. Both features introduce measurement noise, which is particularly relevant for high-frequency models such as unrestricted MIDAS regressions, and imply that Trends data should be interpreted as noisy behavioural proxies rather than precise measurements.\\
+Second, search terms may carry multiple meanings or evolve over time. Although the selected keywords in this study are behaviourally well defined, they may still capture heterogeneous intentions (for example, \textit{bewerbung} searches by students, career changers, or unemployed individuals). Google’s query classification system is not observable to the researcher, and keyword-based indices cannot distinguish between different user groups or contexts in which the terms are used.\\
+Third, Google Trends does not provide demographic or labour-force identifiers due to privacy constraints. As emphasised by \citet{D'Amuri2010Google}, search activity reflects the behaviour of both unemployed and employed individuals. Because unemployed job search tends to be countercyclical, while on-the-job search is typically procyclical, the resulting aggregate index may blur the distinction between labour-market states.\\
+Finally, weekly data do not align perfectly with half-month intervals, so some months contain uneven numbers of observations in the W12 and W34 segments. Assigning each weekly observation to the half-month containing its Sunday timestamp introduces small timing mismatches in the biweekly indicators.\\
+Overall, these limitations imply that Google Trends indicators should be interpreted as timely but noisy behavioural signals. 
+
+
+
+
+
+
+
+\section{Descriptives}
+This section provides descriptive evidence on the constructed biweekly Google Trends indicators. The aim of this section is first, to assess whether the stitching and biweekly aggregation yield internally consistent series over 2011–2023, and second, to document salient time-series features, such as seasonality, trends, and episodic shocks.
+The features are likely to matter for subsequent nowcasting specifications.
+Figure~\ref{fig:w12w34_multiplot} plots both biweekly components for each keyword. Basic descriptive statistics for the biweekly indicators and unemployment are reported in Table~\ref{tab:descriptives}.
+The levels of the biweekly indices are broadly comparable across W12 and W34\textsubscript{prev} for each keyword, with means typically between 40 and 65 index points. The private portal \textit{indeed} exhibits the highest variability, reflecting their strong growth and pronounced cyclicality over the sample period, whereas the unemployment rate fluctuates in a relatively narrow band around an average of 6\%.\\
+Across all series, the most notable feature is the strong and highly regular seasonality. Public-sector related terms such as \textit{arbeitsamt}, \textit{jobbörse} but also \textit{bewerbung} exhibit pronounced intra-year cycles with peaks around the turn of the year and troughs in the summer months.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{figures/all_sers.png}
+    \caption{Biweekly Google search indicators for all keywords: W12 (blue) and W34\textsubscript{prev} (orange), 2011--2023.}
+    \label{fig:w12w34_multiplot}
+\end{figure} 
+A second consistent pattern is that the W34\textsubscript{prev} component tends to show sharper and more regular seasonal spikes than the corresponding W12 values, particularly for \textit{arbeitsamt}, \textit{bewerbung} and \textit{jobbörse}.
+\begin{table}[ht]
+\centering
+\caption{Descriptive statistics for biweekly Google Trends indicators and unemployment}
+\label{tab:descriptives}
+\begin{tabular}{lrrrr}
+\toprule
+Variable & Mean & Std.\ dev. & Min & Max \\
+\midrule
+stepstone\_W12      & 63.68 & 13.00 & 37.36 & 97.00 \\
+indeed\_W12         & 87.77 & 39.97 & 14.50 & 180.24 \\
+jobbörse\_W12       & 52.13 & 24.17 & 12.24 & 95.00 \\
+arbeitsamt\_W12     & 43.89 & 15.67 & 21.02 & 85.50 \\
+bewerbung\_W12      & 58.56 & 13.83 & 26.80 & 90.50 \\
+stepstone\_W34prev  & 61.71 & 14.01 & 31.81 & 97.50 \\
+indeed\_W34prev     & 84.64 & 39.47 & 14.00 & 170.95 \\
+jobbörse\_W34prev   & 50.27 & 23.82 & 10.80 & 96.50 \\
+arbeitsamt\_W34prev & 44.30 & 16.02 & 18.39 & 82.67 \\
+bewerbung\_W34prev  & 55.66 & 14.36 & 22.78 & 80.50 \\
+Unemployment        &  6.00 &  0.72 &  4.80 &  7.40 \\
+\bottomrule
+\end{tabular}
+\end{table}
+This distinction between the two biweekly components is also clearly visible in the seasonal boxplots in Figures~\ref{fig:seasonality_w34} and \ref{fig:seasonality_w12} in the Appendix. For the W34\textsubscript{prev} indicators, the January spike is particularly pronounced and occurs consistently across all keywords, followed by a sharp decline into February. This pattern is much less pronounced in the W12 components, where month-to-month differences are visibly flatter.\\
+Long-run patterns differ systematically across keywords. Searches for \textit{arbeitsamt} and \textit{jobbörse} display a persistent downward trend over 2011--2023, consistent with declining usage of public employment-service channels. By contrast, private job portals such as \textit{indeed} and \textit{stepstone} exhibit a pronounced upward trajectory during the 2010s, reflecting structural digitalisation and the increased importance of private platforms in German job search. The keyword \textit{bewerbung} exhibits a slight monotonic decline, consistent with reduced reliance on generic application-related searches in favour of platform-integrated application processes.\\
+Several series also feature episodic bursts, most notably around 2020--2021 during the COVID-19 shock. Spikes in \textit{arbeitsamt}, \textit{indeed} and \textit{stepstone} suggest heightened job-search uncertainty and sudden shifts in labour-market activity during the pandemic. In contrast, \textit{jobbörse} and \textit{bewerbung} appear less affected, consistent with their declining long-term usage.
+Overall, the biweekly aggregation appears internally coherent, as for each keyword, the W12 and W34\textsubscript{prev} components track similar underlying behavioural patterns, with W34\textsubscript{prev} often exhibiting a clearer and more regular seasonal structure. \\
+The stitched weekly series form the basis for the biweekly aggregation described in Section \ref{sec:biweekly_aggregation} and for the unrestricted MIDAS models. Visual inspection of the weekly indices in Figure \ref{fig:weekly} confirms that they exhibit the same broad seasonal patterns, long-run trends and COVID-related spikes as their biweekly counterparts, with additional high-frequency variation at the weekly level. Because these high-frequency fluctuations are primarily relevant for the mixed-frequency models, the main descriptive discussion focuses on the biweekly indicators and refers to the weekly series only when introducing the MIDAS regressions.
+Based on these specifications that entail trends and high seasonality subsequently the regression models will include month of year dummies to absorb deterministic seasonal patterns and stationarity test in the next section will be applied to the data.
+
+
+
+
+
+
+\section{Stationarity, differencing and implications for model choice}
+Because the subsequent AR(1), ARX and MIDAS specifications are formulated under the assumption of stationarity, it is important to assess whether the monthly unemployment rate and the biweekly Google Trends indicators are stationary or contain a unit root. This determines whether the models should be estimated in levels or in first differences. 
+Since the biweekly timing construction is adopted from \citet{Askitas}, who work with seasonally differenced error-correction dynamics, I begin by formally examining integration properties in the present 2011–2023 sample before deciding on the appropriate specification.\\
+To this end, I apply Augmented Dickey--Fuller (ADF) tests to all series in levels and, where appropriate, in first differences. The ADF test extends the classical Dickey--Fuller regression by adding lagged differences to control for serial correlation in the residuals. For each series, the number of lagged differences is selected automatically using the Akaike information criterion (AIC), subject to a maximum of 13 lags, and critical values are taken from \citet{mckinnon} as implemented in the \texttt{statsmodels} python package package.\\
+Because the ADF test is sensitive to the choice of deterministic terms, I select the appropriate specification (no constant, constant, or constant and linear trend) based on an inspection of the plotted series. Series that exhibit a clear trend in levels, such as the unemployment rate and most Google search indices, are tested under the trend specification, while series fluctuating around a nonzero mean are tested with a constant only. This preserves power against the relevant alternatives.
+Following \citet[Table~17.3]{hamilton}, the Augmented Dickey--Fuller regression with $p$ augmenting lags can be written in its most general form as
+\begin{equation}
+y_t = \zeta_1 \Delta y_{t-1} + \zeta_2 \Delta y_{t-2} + \dots + \zeta_{p-1} \Delta y_{t-p+1} + \rho y_{t-1}+ \alpha + \delta_t + \epsilon_t
+\label{eq:adf}
+\end{equation}
+where $\alpha$ is an intercept, $\delta t$ a deterministic linear trend, and the lagged differences $\Delta y_{t-j}$ control for serial correlation in the innovations.
+First when it comes to the biweekly aggregated variables
+Table~\ref{tab:adf_levels} reports the ADF results in levels. Across all Google Trends indicators and for the unemployment rate, the null hypothesis of a unit root cannot be rejected at the 5\% significance level, indicating that the series are nonstationary in levels. To confirm whether the variables are integrated of order one, I repeat the tests for the first differences. As shown in Table~\ref{tab:adf_diff1_n}, the ADF statistics for the first-differenced series strongly reject the unit-root null for all biweekly variables and as well for the unemployment rate. Taken together, the results imply that all biweekly  variables and the unemployment rate are non stationary in their repective levels specification and become stationary after first differencing.
+
+\begin{table}
+\caption{The Augmented Dickey Fuller test in levels}
+\label{tab:adf_levels}
+\begin{tabular}{lcccc}
+\hline\hline
+Series & Det. spec & Lags & p-value & Reject $H_0$ at 5\%? \\
+\hline
+stepstone\_W12      & c  & 13 &  0.4368 & No \\
+indeed\_W12         & ct & 13 &  0.4678 & No \\
+jobbörse\_W12       & ct & 12 &  0.0950 & No \\
+arbeitsamt\_W12     & ct & 11 &  0.7232 & No \\
+bewerbung\_W12      & ct & 12 &  0.5619 & No \\
+stepstone\_W34prev  & c  & 13 &  0.5740 & No \\
+indeed\_W34prev     & ct & 13 &  0.5983 & No \\
+jobbörse\_W34prev   & ct & 12 &  0.1206 & No \\
+arbeitsamt\_W34prev & ct & 13 &  0.4282 & No \\
+bewerbung\_W34prev  & ct & 12 &  0.6317 & No \\
+Unemp               & c  & 13 &  0.3859 & No \\
+\hline\hline
+\end{tabular}
+\end{table}
+For the MIDAS specifications, the Google Trends regressors enter at weekly frequency.
+In order to ensure a uniform and conservative modeling strategy, all weekly
+Google Trends series are transformed into first differences prior to estimation. 
+Augmented Dickey–Fuller tests confirm that the differenced weekly series are stationary for all keywords (see Table~\ref{tab:adf_weekly}a
+The MIDAS regressors hence, are weekly changes rather than weekly levels. This choice is motivated by two considerations. First, it ensures that the high-frequency covariates used in the MIDAS regressions are stationary. Second, it maintains interpretational consistency across model classes, as all specifications forecast monthly changes in unemployment using changes in search intensity.
+\begin{table}[ht]
+\centering
+\caption{ADF tests for weekly Google Trends indicators (first differences, no constant)}
+\label{tab:adf_weekly}
+\begin{tabular}{lccc}
+\toprule
+Variable & Used lag & $p$-value & Reject unit root (5\%) \\
+\midrule
+stepstone  & 12 & 0.0000 & Yes \\
+indeed     & 12 & 0.0000 & Yes \\
+jobbörse   & 13 & 0.0000 & Yes \\
+arbeitsamt & 13 & 0.0000 & Yes \\
+bewerbung  & 13 & 0.0000 & Yes \\
+\bottomrule
+\end{tabular}
+\end{table}
+Overall, the unit-root evidence motivates a parsimonious baseline specification in changes. In the remainder of the paper, unemployment and the Google Trends indicators are therefore modelled in first differences. However, because the biweekly timing construction follows \citet{Askitas}, who motivate an error-correction representation when unemployment and search activity share a common stochastic trend, the next step is to examine whether cointegration is present. If cointegration is supported, the analysis can be interpreted within an error-correction framework. If not, the differenced specifications provide the appropriate and internally consistent baseline for the subsequent ARX and MIDAS nowcasting exercises.
+
+
+
+\subsection{A notion on cointegration}
+Given that unemployment and the biweekly Google Trends indicators are integrated of order one, the next question is whether there exists any cointegrating relationship, which means, whether there is any linear combination of the variables that is stationary. If cointegration holds, the short-run dynamics can be represented in an error-correction form \citep{engle}. This step is included to maintain comparability with \citet{Askitas}, whose biweekly timing framework motivates an ECM-type interpretation. Accordingly, I test whether the data support a cointegrating relationship between unemployment and search intensity before considering any error-correction specification.
+Cointegration is assessed only for the biweekly indicators, which are conceptually aligned with the \citet{Askitas} framework and summarise within-month search behaviour. By contrast, the weekly search series used later in the MIDAS models are intended to capture short-run mixed-frequency dynamics rather than long-run equilibria, so testing them for cointegration with unemployment is not pursued in this seminar.
+Hence, I test for pairwise cointegration between unemployment and each biweekly Google Trends indicator using the Engle--Granger procedure.
+ In the first step, unemployment is 
+regressed on each biweekly search indicator in levels, and the residuals are extracted. Under cointegration, these residuals should 
+be stationary. Since the long-run regression includes an intercept but no deterministic trend, the appropriate critical values are those of Case~2 in \citet[p.~766]{hamilton}.
+Table~\ref{tab:eg_results} in the Appendix reports the Engle--Granger ADF statistics for the 
+residuals of the long-run regressions between unemployment and each biweekly Google 
+Using the appropriate critical values, the unit-root null is rejected at the 5\% level for only two biweekly search indicators, which are early-month searches on the private job portal StepStone (W12) and late-previous-month searches on Indeed (W34\textsubscript{prev}), while the remaining indicators fail to reject the null. 
+The statistical evidence is further undermined by the visual behaviour of the 
+Engle--Granger residuals displayed in Figure \ref{fig:res_coint}.
+Rather than exhibiting 
+stationary mean-reverting dynamics, the residuals display long, persistent drifts, 
+seasonal patterns, structural breaks, and pronounced deviations during episodes such 
+as the COVID--19 crisis. Such behaviour is inconsistent with the notion of a stable 
+equilibrium error term and therefore contradicts the existence of any meaningful 
+cointegrating relationship.
+In the follwoing the biweekly and biweeekly variables therefore will enter the regression in first differences.
+This avoids spurious regression behaviour and ensures that the short-run 
+dynamic effects of search activity on unemployment are identified without imposing an 
+unfounded long-run equilibrium structure.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{figures/res_coint.png}
+    \caption{Residuals for cointegration}
+    \label{fig:res_coint}
+\end{figure}
+
+
+
+
+
+
+\section{Econometric models and nowcasting design}
+The empirical analysis is framed in a nowcasting context, where the objective is to estimate the current-month unemployment level before its official release. Unlike standard forecasting, which predicts outcomes for future periods, nowcasting exploits information that becomes available within the reference period itself. In the case of German unemployment, the official monthly figure is released with a delay, whereas high-frequency Google search data are observed within the month and may contain timely information about current labour market conditions.\\
+To adress this nowcasting problem, I consider three classes of models. First, a univariate autoregressive benchmark, which models unemployment in first differences and serves as a parsimonious reference specification without Google data. Second, ARX models augment this benchmark with biweekly Google Trends indicators, allowing an assessment of whether search activity improves the nowcast relative to using unemployment alone and whether early-month versus late-month search signals carry different information. Third, an unrestricted MIDAS regression incorporates weekly Google search series directly into the monthly equation, exploiting the mixed-frequency structure without temporal aggregation. The formal specification and estimation of each model class are described in the following subsections.
+
+
+
+\subsection{Autoregressive Benchmark}
+As a benchmark, unemployment is modelled as a univariate autoregressive process in first differences. Let
+\[
+\Delta U_t = U_t - U_{t-1}
+\]
+denote the monthly change in the unemployment level. Consistent with the unit-root evidence for $U_t$ and the absence of robust cointegration with Google search indicators, the forecasting equations are specified in terms of $\Delta U_t$.
+The benchmark specification is
+\begin{equation}
+\Delta U_t = \alpha + \sum_{j=1}^{p} \phi_j \Delta U_{t-j} + \sum_{m=1}^{11} \gamma_m D_{m,t} + \varepsilon_t,
+\label{eq:ar_diff_final}
+\end{equation}
+where $D_{m,t}$ are monthly dummy variables that control for deterministic seasonality in the non-seasonally-adjusted unemployment series, and $\varepsilon_t$ is an error term. In a preliminary step, lag orders $p = 1,\dots,6$ are considered in an unrestricted AR model for $\Delta U_t$. The Bayesian information criterion (BIC) is minimised at $p=1$, so the benchmark reduces to an AR(1) process in first differences with deterministic seasonal controls, which can equivalently be interpreted as an ARIMA$(1,1,0)$ model for $U_t$.
+All parameters in \eqref{eq:ar_diff_final} are estimated by ordinary least squares (OLS) on an expanding sample. 
+
+\subsection{Biweekly Autoregressive Models}
+To evaluate whether Google search activity contains information beyond past unemployment, I augment the autoregressive benchmark of the previous section with biweekly Google Trends indicators. This leads to a class of autoregressive models with exogenous regressors (ARX), which provide a parsimonious extension of the benchmark that allows for additional predictors.\\
+Let $\Delta G_{t}$ denote the monthly change in a given biweekly Google Trends indicator aligned to month $t$. The resulting ARX model is
+\begin{equation}
+    \Delta U_t 
+    = \alpha 
+    + \phi \,\Delta U_{t-1}
+    + \beta_{0} \,\Delta G_{t} 
+    + \sum_{m=1}^{11} \gamma_m D_{m,t}
+    + \varepsilon_t,
+    \label{eq:arx_main}
+\end{equation}
+where $D_{m,t}$ are monthly dummy variables capturing deterministic seasonality in the non-seasonally-adjusted unemployment series and $\varepsilon_t$ is an error term.\\
+In the empirical implementation, each ARX regression is augmented with a single Google Trends indicator at a time (one keyword and one timing variant). This parsimonious design is motivated by the limited effective sample size in the expanding-window setting and by the strong cross-correlation among Google search series, which would otherwise inflate estimation uncertainty. Estimating separate ARX models also enables a transparent comparison of predictive accuracy between early-month indicators based on weeks 1--2 (W12) and late signals from weeks 3--4 of the preceding month (W34\_prev) for the same keyword.\\
+In this specification, the monthly change in unemployment, $\Delta U_t$, depends on its own lag, contemporaneous changes in the aligned Google indicator, and seasonal controls. The autoregressive term $\Delta U_{t-1}$ captures persistence in unemployment changes, while $\Delta G_t$ allows the model to exploit timely variation in search intensity available within or shortly before month $t$.\\
+Because unemployment in levels is integrated of order one, the Google indicators, both $U_t$ and the biweekly Google series enter the ARX model in first differences. All augmented models are estimated by ordinary least squares (OLS) in the same pseudo real-time expanding-window scheme used for the AR benchmark. By maintaining the same differencing convention, seasonal controls, and expanding-window estimation scheme across the AR and ARX specifications, the resulting nowcasts are directly comparable. Any improvement in forecast accuracy of the ARX models over the AR benchmark can therefore be attributed to the incremental information contained in the respective biweekly Google indicator.
+
+
+
+
+
+
+\subsection{MIDAS}
+Mixed-data sampling (MIDAS) regressions, provide a flexible econometric framework for modelling relationships between variables observed at different sampling frequencies. A central motivation for MIDAS arises in situations where a low-frequency target series (e.g., monthly or quarterly macroeconomic indicators) is potentially explained by high-frequency predictors (such as daily financial variables or weekly surveys). MIDAS regressions allow the high-frequency information to enter directly into the low-frequency equation without requiring temporal aggregation, interpolation, or large state-space systems. This property has made MIDAS models widely used in empirical finance (e.g., volatility forecasting \citet{ghysels}) and in macroeconomic nowcasting \citep{clements2008macroeconomic}, where timely indicators are essential.\\
+Classical MIDAS formulations rely on parametric weighting schemes, most prominently the Beta and Almon lag polynomials \citep{ghysels, ghysel2}, to summarise a potentially large number of high-frequency lags in a parsimonious way. These so-called restricted MIDAS models impose a functional form on how weekly or daily lags of the predictor affect the low-frequency outcome, here only a few shape parameters govern the weights, which keeps estimation tractable when the frequency ratio between series is large.
+Next to the restricted MIDAS an alternative  development can be seen in the unrestricted MIDAS (U-MIDAS) model, in which no parametric weighting structure is imposed and each high-frequency lag receives its own coefficient \citep{foroni2015unrestricted}. This unrestricted version is 
+attractive whenever full flexibility in capturing the contribution of individual weekly lags is preferred, or when the number of available high-frequency observations is sufficiently modest to allow estimation.
+In the context of this analysis, the unrestricted specification is particularly suitable because the frequency ratio between weekly Google Trends data and monthly unemployment is relatively small, making an unrestricted lag structure empirically feasible. As shown by \citet{foroni2015unrestricted}, when the difference in sampling frequencies is modest, unrestricted MIDAS models can perform at least as well as, and often better than, restricted MIDAS specifications based on parametric lag polynomials. I therefore adopt the U-MIDAS regression as the mixed-frequency counterpart to the biweekly ARX models introduced above.\\
+Let $\Delta U_t$ denote the monthly change in unemployment and let $\Delta G_{t,k}$ denote the $k$-th weekly lag of the differenced Google Trends indicator available at month-end $t$, where $k=0$ corresponds to the most recent observed week. In the empirical implementation I set $K=8$, so the regression includes the last eight weekly observations available up to month-end $t$. The U-MIDAS specification is
+\begin{equation}
+    \Delta U_t 
+    = \alpha
+    + \phi \,\Delta U_{t-1}
+    + \sum_{k=0}^{K-1} \beta_{k}\,\Delta G_{t,k}
+    + \sum_{m=1}^{11} \gamma_m D_{m,t}
+    + \varepsilon_t,
+    \label{eq:umidas}
+\end{equation}
+where $D_{m,t}$ are monthly dummy variables controlling for deterministic seasonality in the non-seasonally-adjusted unemployment series and $\varepsilon_t$ is an error term. To avoid overparameterisation and multicollinearity, each U-MIDAS regression is estimated with a single weekly Google indicator at a time, in line with the ARX specifications.
+I estimate two nested U-MIDAS variants. First, a specification without the autoregressive term (setting $\phi=0$) isolates the predictive content of weekly search activity relative to a purely seasonal benchmark. Second, an AR-augmented specification estimates $\phi$ and assesses whether weekly Google information improves nowcast accuracy \emph{conditional on} the persistence captured by $\Delta U_{t-1}$, ensuring comparability with the AR and ARX benchmarks.
+ Unlike the restricted MIDAS models that need to be estimated using Nonlinear estimates, the central parameters in that model can be estimated by ordinary least squares (OLS), as 
+discussed in \citet{foroni2015unrestricted}. For the present application, and the usage of expanding windows the it is
+particularly attractive because it avoids the nonlinear optimisation required in 
+restricted MIDAS models, and hence facilitates repeated estimation in a expanding-window 
+nowcasting framework, and allows the contribution of individual weekly lags to be 
+determined directly from the data without imposing a specific functional form.
+Other extensions of the MIDAS framework, such as transfer-function MIDAS (TF-MIDAS), which incorporates ARMA-type dynamics in the weighting process, have been proposed in the literature \citep{gayoso}, but these approaches typically involve more complex estimation procedures and are therefore beyond the scope of the present analysis.
+
+
+
+
+
+
+
+
+
+
+
+
+
+\section{Methodology}
+\label{sec:methodology}
+This section outlines the pseudo real-time evaluation design used to assess whether Google search indicators improve nowcast accuracy for monthly German unemployment. All models are estimated under identical timing restrictions and an expanding-window scheme, and predictive performance is evaluated over a common out-of-sample period.
+
+\subsection{Real-time information set and nowcasting target}
+\label{subsec:info_set}
+The objective of the analysis is to nowcast the monthly unemployment rate for calendar month $t$ at the end of month $t$, before the official figure for that month is released.
+Accordingly, the information set is defined to include all unemployment and Google Trends observations with timestamps up to month-end $t$.
+ The analysis adopts a publication-based nowcasting perspective, under which all information observed up to month-end t is admissible for predicting the unemployment rate for month t. 
+Let $U_t$ denote the monthly unemployment rate and define $\Delta U_t = U_t - U_{t-1}$.
+Let $G_{i,\tau}$ denote the weekly Google Trends series for indicator $i=1,\dots,I$ observed at week $\tau$ (indexed by week-ending dates),
+and define $\Delta G_{i,\tau} = G_{i,\tau} - G_{i,\tau-1}$.
+At the end of month $t$, the information set available to the forecaster is
+\begin{equation}
+\mathcal{I}_t =
+\big\{ \Delta U_s : s \le t-1;\ 
+       \Delta G_{i,\tau} : \tau \le \tau_t,\ i=1,\dots,I \big\},
+\label{eq:info_set}
+\end{equation}
+where $\tau_t$ denotes the last weekly observation with a week-ending date on or before month-end $t$.
+For specifications that use monthly aggregates of Google Trends,
+these aggregates are measurable with respect to $\mathcal{I}_t$ by construction.
+Following the unit-root evidence in Section 4, all forecasting equations are specified in first differences. Let $\widehat{\Delta U}_t$ denote the model-based prediction of the monthly change in unemployment conditional on $\mathcal{I}_t$. The corresponding nowcast for the unemployment level is obtained via
+\begin{equation}
+    \widehat{U}_t = U_{t-1} + \widehat{\Delta U}_t,
+    \label{eq:level_forecast}
+\end{equation}
+which yields a pseudo real-time estimate of the current-month level based on information available at the end of month $t$.\\
+To operationalize the information set $\mathcal{I}_t$ for the Google Trends predictors, I consider two representations of the weekly series.
+First, I construct biweekly aggregates at the monthly frequency that are measurable at month-end $t$.
+The \textit{W12} regressor is defined as the average of the first two weekly observations with week-ending dates in calendar month $t$.
+The \textit{W34prev} regressor is defined as the average of the last two weekly observations with week-ending dates in calendar month $t-1$.
+Second, I incorporate weekly Google Trends data directly using an unrestricted MIDAS (U-MIDAS) design.
+For each month $t$, the U-MIDAS specification includes the most recent $K$ weekly changes observed up to month-end $t$, indexed from $k=0$ (most recent week) to $k=K-1$ (oldest included week).
+
+
+
+
+
+
+
+
+.
+\subsection{Expanding-window estimation scheme}
+The models are estimated using an expanding-window framework, which mirrors the updating process of a real-time forecaster. An expanding window is preferred to a rolling window in this setting because it exploits the full historical sample to estimate persistent unemployment dynamics and seasonal patterns, while reducing estimation variance in relatively short monthly samples. Let $t$ index months and define an out-of-sample evaluation period starting in January 2019. For each prediction date $t$ in this evaluation window, the estimation sample consists of all observations strictly prior to $t$.\\
+The procedure can be summarised as follows. First, an initial training sample of at least $T_{\min}$ monthly observations (in the baseline, $T_{\min} = 60$) is used to obtain the first set of parameter estimates for each model. Second, for each subsequent month $t$ in the evaluation period, the model is re-estimated on the expanding sample of all observations with dates $s < t$, using only the information included in $\mathcal{I}_t$ as defined in Equation \eqref{eq:info_set}. Third, the updated coefficients are used to construct a current-month prediction $\widehat{\Delta U}_t$
+ and, via Equation \eqref{eq:level_forecast}, a nowcast $\widehat{U}_t$ for the unemployment level in month $t$.
+Repeating this procedure yields a sequence of pseudo real-time nowcasts and associated forecast errors for each model. 
+
+\subsection{Evaluation sample and forecast horizon}
+The evaluation period spans January 2019 to January 2023. For every month t, in this interval, the nowcast
+$\widehat{U}_t$ is compared with the subsequently released unemployment rate $U_t$, yielding forecast errors
+\begin{equation}
+    e_t = \widehat{U}_t - U_t,
+\end{equation}
+Performance is summarised using the root mean squared error (RMSE) and the mean absolute error (MAE),
+\begin{equation}
+    \text{RMSE} = \sqrt{\frac{1}{T_{\text{eval}}} \sum_{t=1}^{T_{\text{eval}}} e_{t}^2}, \qquad 
+    \text{MAE} = \frac{1}{T_{\text{eval}}} \sum_{t=1}^{T_{\text{eval}}} |e_t|,
+\end{equation}
+where $T_{\text{eval}}$ denotes the number of out-of-sample nowcasts.
+Reporting both measures allows a comparison of models that is sensitive to large forecast errors (RMSE) while also capturing typical absolute deviations that are less influenced by extreme observations (MAE).
+
+
+
+\subsection{Statistical comparison of predictive accuracy}
+Formal pairwise comparisons of predictive accuracy are conducted using the Diebold--Mariano (DM) test. For two competing models,
+let $e_{1,t}$ and $e_{2,t}$ denote their respective out-of-sample forecast errors, and define the loss differential under squared error loss as
+\begin{equation}
+     d_t = e_{1,t}^2 - e_{2,t}^2.
+\end{equation}
+The null hypothesis of equal predictive accuracy is
+\begin{equation}
+    H_0: \mathbb{E}[d_t] = 0 .
+\end{equation}
+The DM statistic is constructed from the sample mean of $\{d_t\}$ and a heteroskedasticity- and autocorrelation-consistent (HAC) estimate of its variance using Bartlett weights. Although the forecast horizon is one month ahead ($h=1$), dependence in the loss differential may still arise, therefore HAC standard errors are employed with a small bandwidth. To account for the finite evaluation sample, the Harvey--Leybourne--Newbold small-sample correction is applied. Statistical significance is assessed using a Student-$t$ reference distribution.
+
+
+
+
+
+
+
+
+
+
+\section{Results}
+Figure \ref{fig:best_models} provides an overview of the nowcast performance of four representative models over the evaluation period which encapsulates January 2019–January 2023: the AR(1) benchmark, the best-performing ARX specification based on early-month searches (W12), the best-performing ARX specification based on late-month searches (W34prev), and the best-performing unrestricted U-MIDAS model with an autoregressive term.
+\label{fig:best_models}
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{figures/best_models.png}
+\caption{The four best performing models compared}
+\end{figure}
+Three immediate patterns stand out. First, all model trajectories track the realised unemployment rate closely during periods of gradual adjustment, reflecting the strong persistence and seasonality of German unemployment.
+Interestingly the models’ largest deviations occur around pronounced turning points, where the seasonal-plus-persistence structure tends to mis-calibrate the amplitude and timing of short-run movements. In particular, the downward movement around mid-2019 and the onset of the COVID-19 crisis are systematically mis-predicted, and several later episodes, most notably early 2022 and mid-2022, feature spikes that are forecast as too large and, in some cases, with a slight lag relative to the realised series.
+Second, differences between the AR benchmark and the with biweekly Google Trend augmented autoregressive models are visually negligible, with early- and late-month Google-based specifications producing almost indistinguishable paths.
+This indicates that the incremental signal from the biweekly Google Trends indicators is weak in this setting and that within-month timing differences do not translate into materially different nowcast paths. By contrast, the U-MIDAS specification with an autoregressive term occasionally tracks local movements marginally more closely (for example around early 2022), whereas the U-MIDAS model without the autoregressive component performs noticeably worse, underscoring that persistence in unemployment changes remains the dominant source of predictability.
+Third, the U-MIDAS specification exhibits slightly closer tracking in some months but, like all other models, fails to anticipate abrupt turning points, most notably during the first COVID-19 shock in spring 2020.
+Therefore, despite the availability of higher-frequency weekly search data, all models respond to the shock largely with delay. This suggests that, for the selected keywords and at the monthly nowcasting horizon considered here, Google search intensity does not deliver sufficiently strong leading information to anticipate abrupt regime shifts, any gains from incorporating search data are therefore likely to be modest and concentrated in specific months rather than representing a broad improvement in forecast dynamics.
+These visual impressions already suggest that any gains from incorporating Google search data are likely to be modest and concentrated in specific periods. \\
+To quantify the visual patterns observed in Figure \ref{fig:best_models}, Table \ref{tab:model_rmse} reports root mean squared forecast errors (RMSE) for a selected set of representative models: the AR benchmark and the best-performing specifications within the ARX and U-MIDAS classes. 
+RMSE is used as the primary evaluation metric because it penalizes large forecast errors disproportionately and is therefore particularly informative in a nowcasting context where extreme deviations, such as those observed during crisis periods, dominate forecast loss.
+Relative to the AR(1) benchmark (RMSE = 0.1817), the best-performing ARX specifications based on biweekly Google Trends indicators achieve at most marginal improvements. The strongest early-month specification (jobbörse, W12) reduces RMSE by less than one percent, while the best late-month specification (arbeitsamt, W34prev) performs essentially on par with the benchmark. These differences are economically negligible, indicating that augmenting the autoregressive model with biweekly search indicators does not materially improve monthly unemployment nowcasts.
+By contrast, the unrestricted U-MIDAS specification augmented with an autoregressive term yields a modest reduction in forecast error. For the keyword jobbörse, RMSE declines to 0.1722, corresponding to an improvement of approximately five percent relative to the AR benchmark. A similar but slightly smaller gain is observed for stepstone. Although limited in magnitude, this pattern suggests that exploiting weekly information can provide incremental predictive content once persistence in unemployment changes is explicitly controlled for.
+Importantly, the U-MIDAS specification without an autoregressive component performs worse than the benchmark even for the best-performing keyword. This underscores that weekly Google search activity alone does not dominate the forecasting dynamics; rather, any predictive contribution from search data operates on top of strong autoregressive and seasonal patterns. Consistent with this, the best-performing mixed-frequency specifications are associated with job-platform related terms (jobbörse, stepstone), though differences across keywords remain small across model classes.
+\begin{table}[ht]
+\centering
+\begin{tabular}{l  l r r}
+\hline
+Model class &  Keyword & RMSE & RMSE change vs AR (\%) \\
+\hline
+AR benchmark &  -- & 0.1817 & 0.0 \\
+ARX (W12) & jobbörse & 0.1802 & -0.8 \\
+ARX (W34prev)  & arbeitsamt & 0.1817 & -0.0 \\
+U-MIDAS (no AR) & jobbörse & 0.1830 & +0.7 \\
+\textbf{U-MIDAS (with AR)} & \textbf{jobbörse} & \textbf{0.1722} & \textbf{-5.2} \\
+U-MIDAS (with AR) & stepstone & 0.1745 & -4.0 \\
+\hline
+\end{tabular}
+\caption{Model comparison based on RMSE (evaluation window: 2019--2023).}
+\label{tab:model_rmse}
+\end{table}
+
+
+\subsection{Error anatomy: where do forecast gains arise?}
+Figure \ref{fig:err_comp} plots absolute forecast errors for the AR(1) benchmark and the best-performing U-MIDAS specification (jobbörse, with autoregressive term). Two features are immediately apparent. First, the largest forecast error, corresponding to the initial COVID-19 shock in spring 2020, is virtually identical across both models. This confirms that even when weekly search data are exploited at full resolution, abrupt regime shifts remain difficult to anticipate at the monthly horizon. The inclusion of high-frequency Google Trends information does not materially reduce forecast loss during extreme crisis episodes.
+Second, outside these stress periods, the U-MIDAS specification exhibits slightly flatter error profiles in several months, most notably around early 2022 and again at the beginning of 2023. In these episodes, absolute errors are consistently smaller than those of the AR benchmark, suggesting that weekly search activity related to job-search platforms provides limited but non-negligible incremental information during periods of moderate adjustment. These local improvements, while small in magnitude, accumulate to produce the modest RMSE gains documented in Table\ref{tab:model_rmse}. Overall, the error anatomy indicates that U-MIDAS gains arise from attenuating medium-sized deviations rather than from improved anticipation of large shocks.
+\label{fig:err_comp}
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{figures/error_comp.png}
+\caption{Error comparison AR vs U-Midas}
+\end{figure}
+
+
+
+
+
+
+
+
+\subsection{Evaluation W12 vs W34 comparison}
+A central motivation for the biweekly aggregation framework originates in \citet{Askitas}, who argue that the timing of Google search activity within a month may matter for unemployment prediction due to the institutional structure of unemployment measurement and announcement in Germany. In their framework, search activity in weeks 3–4 of the previous month (W34prev) may be less contaminated by contemporaneous unemployment announcements than activity in weeks 1–2 of the current month (W12), potentially rendering it more informative for prediction.
+While \citet{Askitas} develop this argument using in-sample error-correction models and assess performance primarily through coefficient significance and information criteria, the present analysis evaluates the timing hypothesis from an out-of-sample forecasting perspective. Specifically, we compare W12 and W34prev aggregations using real-time nowcasts and standard forecast accuracy measures, including RMSE and Diebold–Mariano tests of equal predictive accuracy. This approach preserves the conceptual timing argument of the original framework while extending it to a modern forecast-evaluation setting that focuses explicitly on predictive performance rather than in-sample fit similar to the check in \citet{COSTA2024101963}.
+\begin{table}[ht!]
+\centering
+\caption{Comparison of W12 and W34prev biweekly aggregation schemes}
+\label{tab:w12_w34_comparison}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Keyword} & \textbf{RMSE (W12)} & \textbf{RMSE (W34prev)} & \textbf{DM statistic} & \textbf{p-value} \\
+\midrule
+stepstone   & 0.1837 & 0.1879 &  -1.278 & 0.207 \\
+indeed      & 0.1861 & 0.1922 &  -0.719 & 0.475 \\
+arbeitsamt  & 0.1844 & 0.1817 &   0.708 & 0.483 \\
+jobbörse    & 0.1802 & 0.1818 &  -0.882 & 0.382 \\
+bewerbung   & 0.1840 & 0.1847 &  -0.165 & 0.870 \\
+\bottomrule
+\end{tabular}
+\end{table}
+Table \ref{tab:w12_w34_comparison} reports RMSEs for W12 and W34prev along with Diebold–Mariano (DM) tests of equal predictive accuracy. DM tests are conducted on squared-error differentials with a small-sample correction (Harvey–Leybourne–Newbold); for the one-step nowcast horizon we set the Newey–West lag length to zero. Three findings stand out clearly.\\
+First, and as already pointed out in Figure \ref{fig:best_models} forecast accuracy is extremely similar across the two aggregation schemes.
+For every keyword, the RMSE difference between W12 and W34prev is below 0.01, and in absolute terms the two specifications produce nearly indistinguishable forecast paths.
+The smallest difference appears for arbeitsamt, where W34prev performs marginally better (RMSE 0.182 vs. 0.184), while for stepstone and jobbörse W12 is slightly more accurate. These differences are economically negligible.\\
+Second, the Diebold–Mariano tests uniformly fail to reject equal predictive accuracy.
+All p-values for the DM statistics exceed 0.20, with some above 0.40 or 0.80.
+Because the DM test is based on the time series of squared forecast errors, a statistically significant difference would require consistent superiority across the full evaluation period. No such effect appears in the data.\\
+Third, the absence of detectable timing effects is consistent with the broader ARX results: once persistence and seasonal controls are included, the incremental contribution of biweekly Google Trends indicators is small, and shifting the aggregation window within the month does not systematically reduce forecast loss.\\
+Taken together, the results indicate that the timing channel proposed by \citet{Askitas} does not translate into improved out-of-sample nowcasting performance for German unemployment over the 2011–2023 period. Neither early-month nor late-month search activity produces systematically lower forecast errors, and the observed differences are statistically indistinguishable from noise. Consequently, within the ARX nowcasting framework considered here, the choice between W12 and W34prev aggregations is empirically irrelevant.
+
+\subsection{Robustness Check}
+Unrestricted U-MIDAS specifications include multiple weekly lags of the high-frequency predictor. With a limited monthly evaluation sample, this can induce multicollinearity among weekly regressors and inflate estimation variance under OLS, potentially leading to overfitting.
+To assess whether the U-MIDAS results are driven by overparameterization, I re-estimate the models using ridge and lasso regularization, selecting the penalty parameter by time-series cross-validation within each expanding estimation window. Regularization is applied to the weekly-lag coefficients (and, when included, the autoregressive term), while seasonal month dummies are treated as unpenalized deterministic controls.\\
+In the data at hand, penalized U-MIDAS models do not yield systematic improvements in pseudo real-time nowcast accuracy relative to the OLS U-MIDAS specification. This suggests that the modest gains observed for U-MIDAS are not driven by overfitting but instead reflect limited incremental information in weekly Google Trends indicators once persistence and seasonality are accounted for.
+A second robustness check concerns the choice of MIDAS lag length K, which determines how much weekly history is used to predict monthly unemployment.
+The analysis uses K = 8 corresponding to approximately two months of weekly information. Because this choice may affect out-of-sample performance and interacts with the risk of overparameterization, I re-estimate U-MIDAS models for K$\epsilon$\{4,6,8,10\}. Table \ref{tab:midas_K_robust} reports the resulting RMSE values (U-MIDAS with an autoregressive term).
+\\First, there is no universally optimal lag length across keywords. Instead, the preferred lag window varies systematically by search term. For jobbörse and stepstone, forecast accuracy improves markedly as the lag window is extended, with the lowest RMSE attained at 
+K=8. In contrast, for arbeitsamt and indeed, shorter lag windows dominate, and forecast performance deteriorates monotonically as additional weekly lags are included.
+Second, this heterogeneity suggests that the predictive content of Google search activity differs not only in strength but also in temporal persistence. Some keywords appear to contain information distributed over several weeks, whereas others exhibit shorter-lived signals that are quickly diluted by noise when longer lag structures are imposed.
+Third, although alternative lag lengths can marginally improve performance for some keywords, the gains remain modest in magnitude and do not alter the overall ranking of models. Importantly, the baseline choice 
+K=8 remains close to optimal for the best-performing keywords while avoiding excessive parameter proliferation. 
+Taken together, the regularization and lag-length exercises indicate that the U-MIDAS findings are not caused by an arbitrary lag choice or overparameterization, but reflect modest and keyword-dependent incremental information in weekly Google Trends data.
+
+
+
+
+
+
+
+
+
+\subsection{Discussion}
+A large body of international evidence documents that Google search data can improve unemployment forecasts relative to standard time-series benchmarks, although much of this work relies on same-frequency models or temporal aggregation of higher-frequency search data. For Spain, \citet{vicente2015forecasting} report that monthly ARIMAX specifications augmented with Google job-search queries reduce out-of-sample forecast errors by roughly 15\% (RMSE) during the Global Financial Crisis, even when structural breaks are explicitly considered. For the United States, \citet{D'Amuri2010Google} find even larger gains: incorporating a weekly Google job-search index improves short-horizon unemployment forecasts by about 30\% at the one-month horizon relative to strong ARMA- and claims-based benchmarks, with particularly strong performance during the Great Recession.\\
+Against this background, the present results indicate that such gains do not automatically transfer to the German case under a demanding pseudo real-time nowcasting design. In particular, once persistence and seasonality are accounted for, biweekly Google Trends indicators constructed to reflect alternative within-month information sets do not yield systematic improvements over the baseline, while exploiting weekly information through U-MIDAS produces only modest gains for selected job-platform-related terms. In contrast, recent mixed-frequency approaches that directly incorporate high-frequency Google Trends within a real-time framework report substantially larger gains, particularly in the Portuguese case studied by \citet{COSTA2024101963}.
+Using daily Google Trends data in a MIDAS nowcasting framework, they document reductions in out-of-sample forecast errors of roughly 40--50\% relative to Random Walk, ARMA, and monthly Google Trends benchmarks. While their results are not directly comparable due to differences in frequency, keyword construction, and institutional context, they provide clear evidence that  mixed-frequency modeling can substantially enhance the extraction of predictive information from search data.
+Importantly, these gains persist during the COVID-19 period, where daily MIDAS-based nowcasts continue to outperform all benchmarks by around 40--50\% in RMSFE. This contrasts with the present findings for Germany, where higher-frequency Google Trends data do not materially improve the prediction of the COVID-related turning point despite a comparable real-time evaluation design.
+This interpretation is reinforced by Germany-focused evidence from related out-of-sample exercises. In an EU-wide nowcasting during the COVID-19 period, \citet{caperna2020googling} use an explicit autoregressive benchmark and show that adding only single Google Trends terms rarely yields statistically significant improvements for European countries. Forecast gains emerge primarily after expanding the information set to a broad collection of topic-linked queries and applying Random-Forest-based variable selection, suggesting that disciplined information selection rather than the inclusion of any single search index is central to extracting forecasting value from online search behavior.
+Complementing this result, \citet{niesert2020can} study out-of-sample unemployment nowcasting with Google search data across five countries and find improvements for four of them, with Germany as the notable exception. They report that German unemployment nowcasts are not improved by Google search indicators in their evaluation. Moreover, relative to the timing-based approach of \citet{Askitas}, this study updates the empirical implementation along three dimensions: it employs a contemporary set of job-search and job-platform keywords while deliberately excluding terms likely to capture announcement-related attention; it extends the sample and evaluates performance in a pseudo real-time out-of-sample design that includes the COVID-19 episode; and it assesses predictive content using forecast-error metrics (RMSE/MAE) together with Diebold--Mariano tests rather than relying on in-sample fit. Under this design, the central timing implication does not carry over: early-month and late-previous-month search measures are empirically very similar in their predictive contribution, and the relative accuracy comparisons do not yield systematic or statistically supported differences. Thus, the timing channel emphasized in \citet{Askitas} appears fragile in a modern out-of-sample setting for Germany, even when keyword choice is aligned more closely with current job-search behavior.
+Several methodological lessons emerge from these results. First, aggregating Google Trends data to biweekly frequency appears to lose little information in the present setting, reflecting the weak underlying signal at the monthly horizon; nevertheless, the modest gains obtained from weekly U-MIDAS indicate that some incremental high-frequency information does exist. Second, autoregressive persistence is crucial: once AR dynamics are excluded, mixed-frequency models can appear overly effective, whereas retaining persistence reveals that the marginal contribution of search data is limited. Third, predictive content differs markedly across keywords, with job-platform and application-related terms performing more informatively than generic search terms, consistent with closer behavioral proximity to actual job-search activity. \\
+These findings highlight several promising directions for future analysis. Rather than further increasing model complexity, the primary scope for improvement lies in feature construction and selection, for example through composite indicators based on simple averages, principal components, or supervised combinations of multiple search terms. Related work has shown that such high-dimensional information sets can be effectively exploited using penalized regressions or neural-network-based nowcasting frameworks, which combine mixed-frequency data with machine-learning techniques to guard against overfitting \citep{borup2023mixed}. On the modeling side, extensions could explore alternative mixed-frequency lag structures, restricted MIDAS weighting schemes, or regime-sensitive specifications, and consider outcome variables more closely aligned with search behavior, such as unemployment inflows, registrations, or vacancy measures. At the same time, the limited sample size and the use of non-seasonally adjusted unemployment data impose natural constraints on model dimensionality, reinforcing the conclusion that careful information-set expansion and disciplined signal extraction are more promising than high-parameter specifications.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\newpage
+\section{Appendix}
+\subsection{Appendix A1: Export frequency possibilities of Google Trends data}
+\label{app:gt_frequency}
+\begin{table}[H]
+\centering
+\caption{Frequency of Google Trends data by requested time span}
+\begin{tabular}{lll}
+\toprule
+Requested time span & Example selection & Frequency returned \\ \midrule
+Up to $\approx$ 9 months
+  & 01.01.2022--30.09.2022 & Daily index (one value per day) \\
+Between $\approx$ 9 months and $\approx$ 5 years
+  & 01.01.2018--31.12.2022 & Weekly index (one value per week) \\
+Longer than $\approx$ 5 years
+  & 01.01.2004--31.12.2023 & Monthly index (one value per month) \\ \bottomrule
+\end{tabular}
+\end{table}
+
+
+\subsection{Appendix A2: Stitching example}
+\label{app:stitching}
+\begin{table}[H]
+\centering
+\caption{Illustration of the stitching procedure for two overlapping windows}
+\label{tab:stitch_example}
+\begin{tabular}{lrrrr}
+\toprule
+Week $t$ & $x^{(j)}_t$ & $x^{(j+1)}_t$ & Ratio $x^{(j)}_t / x^{(j+1)}_t$ & Rescaled $x^{(j+1)}_t \cdot s_{j+1\leftarrow j}$ \\ \midrule
+$ t_1 $ & 40  & 50  & 0.80  & 42.2 \\
+$ t_2 $ & 60  & 75  & 0.80  & 63.3 \\
+$ t_3 $ & 80  & 90  & 0.89  & 76 \\
+$ t_4 $ & 100 & 110 & 0.91  & 92.95 \\ \midrule
+Median &     &     & \multicolumn{2}{l}{$s_{j+1\leftarrow j} = \operatorname{median}\{0.80,0.80,0.89,0.91\} = 0.845$} \\ \bottomrule
+\end{tabular}
+\end{table}
+
+
+\subsection{Appendix A3: Biweekly Aggregation framework}
+\label{fig:biweekly}
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{figures/image_weeks.png}
+\caption{Timing of unemployment releases and construction of the biweekly Google Trends windows.}
+\label{fig:biweekly_timing}
+\end{figure}
+
+
+
+
+\subsection{Appendix A4: GT variables}
+\begin{table}[H]
+\centering
+\caption{Comparison of Google Trends variables: Askitas \& Zimmermann (2009) vs.\ this study}
+\label{app:tab:gt-comparison-simple}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{p{3.2cm} p{5.2cm} p{5.2cm}}
+\hline\hline
+\textbf{Category} 
+& \textbf{Askitas \& Zimmermann (2009)} 
+& \textbf{This seminar (2011--2023)} \\ 
+\hline
+
+Administrative contact 
+& \textit{arbeitsamt}, \textit{arbeitsagentur} 
+& \textit{arbeitsamt} \\
+
+Interest in unemployment news 
+& \textit{arbeitslosenquote} 
+& --- (excluded) \\
+
+Personnel consulting 
+& \textit{personalberater}, \textit{personalberatung} 
+& --- (excluded) \\
+
+Job board usage 
+& \begin{tabular}[c]{@{}l@{}}\textit{stepstone}, \textit{jobworld},\\ 
+\textit{jobscout}, \textit{meinestadt},\\ 
+\textit{monster}, \textit{jobb\"{o}rse}\end{tabular}
+& \begin{tabular}[c]{@{}l@{}}\textit{jobb\"{o}rse}, \textit{stepstone},\\ 
+\textit{indeed}\end{tabular} \\
+
+Application activity 
+& --- 
+& \textit{bewerbung} \\
+
+\hline\hline
+\end{tabular}
+\end{table}
+
+
+
+
+
+\subsection{Appendix A5: Seasonal Boxplots}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{figures/seaw34.png}
+    \caption{Seasonal boxplots for W34prev indicators.}
+    \label{fig:seasonality_w34}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{figures/seaw12.png}
+    \caption{Seasonal boxplots for W12 indicators.}
+    \label{fig:seasonality_w12}
+\end{figure}
+
+
+\subsection{Appendix A6: Weekly plot Google Trends}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{figures/weekly.png}
+    \caption{5 weekly measured GT over time}
+    \label{fig:weekly}
+\end{figure}
+
+
+
+\subsection{Appendix A7: ADF test results first differences of biweekly variables}
+\begin{table}[htbp]
+\centering
+\caption{Augmented Dickey--Fuller tests on first differences }
+\label{tab:adf_diff1_n}
+\begin{tabular}{lccccc}
+\hline\hline
+Series & Lags & ADF statistic & 5\% crit.\ value & p-value & Reject $H_0$ at 5\%? \\
+\hline
+stepstone\_W12      & 11 & -3.2242 & -1.9433 & 0.0013 & Yes \\
+indeed\_W12         & 12 & -2.4965 & -1.9433 & 0.0121 & Yes \\
+jobbörse\_W12       & 11 & -3.0608 & -1.9433 & 0.0022 & Yes \\
+arbeitsamt\_W12     & 10 & -5.5334 & -1.9433 & 0.0000 & Yes \\
+bewerbung\_W12      & 12 & -3.4875 & -1.9433 & 0.0005 & Yes \\
+stepstone\_W34prev  & 11 & -4.0136 & -1.9433 & 0.0001 & Yes \\
+indeed\_W34prev     & 12 & -2.2670 & -1.9433 & 0.0225 & Yes \\
+jobbörse\_W34prev   & 11 & -2.9936 & -1.9433 & 0.0027 & Yes \\
+arbeitsamt\_W34prev & 12 & -3.6222 & -1.9433 & 0.0003 & Yes \\
+bewerbung\_W34prev  & 11 & -5.1217 & -1.9433 & 0.0000 & Yes \\
+Unemp               & 13 & -2.8170 & -1.9433 & 0.0047 & Yes \\
+\hline\hline
+\end{tabular}
+\end{table}
+
+
+
+
+
+
+
+\subsection{Appendix A8: Cointegration results for biweekly variables}
+\begin{table}[htbp]
+\centering
+\caption{Engle--Granger ADF tests for cointegration (residual-based ADF, Case 2 critical values)}
+\label{tab:eg_results}
+\begin{tabular}{lcccccc}
+\hline\hline
+Series & ADF statistic & 5\% crit.\ value & p-value & Lags & Obs & Reject $H_0$ at 5\%? \\
+\hline
+stepstone\_W12      & -3.6274 & -3.4459 & 0.0276 & 13 & 126 & Yes \\
+indeed\_W12         & -3.0409 & -3.4456 & 0.1210 & 12 & 127 & No  \\
+jobbörse\_W12       & -2.7996 & -3.4456 & 0.1971 & 12 & 127 & No  \\
+arbeitsamt\_W12     & -3.1826 & -3.4459 & 0.0879 & 13 & 126 & No  \\
+bewerbung\_W12      & -2.3753 & -3.4456 & 0.3928 & 12 & 127 & No  \\
+stepstone\_W34prev  & -3.2715 & -3.4456 & 0.0711 & 12 & 127 & No  \\
+indeed\_W34prev     & -3.6061 & -3.4459 & 0.0293 & 13 & 126 & Yes \\
+jobbörse\_W34prev   & -3.1639 & -3.4456 & 0.0918 & 12 & 127 & No  \\
+arbeitsamt\_W34prev & -3.0760 & -3.4459 & 0.1121 & 13 & 126 & No  \\
+bewerbung\_W34prev  & -2.6002 & -3.4456 & 0.2798 & 12 & 127 & No  \\
+\hline\hline
+\end{tabular}
+\end{table}
+
+\subsection{Appendix A9 : Penalized U-MIDAS Estimation}
+Let $\Delta U_t$ denote the monthly change in unemployment and let
+$\mathbf{z}_t = (\Delta G_{t,0}, \dots, \Delta G_{t,K-1})'$ denote the vector
+of the most recent $K$ weekly changes in a given Google Trends indicator
+available at month-end $t$.
+Seasonal month dummies are collected in the vector $\mathbf{d}_t$.
+To ensure that deterministic seasonal effects are not affected by
+regularization, the seasonal dummies are partialled out prior to penalized
+estimation. Specifically, for each expanding estimation window, both the
+dependent variable $\Delta U_t$ and the penalized regressors $\mathbf{z}_t$
+are residualized with respect to the seasonal dummies by ordinary least
+squares. Let $\tilde{\Delta U}_t$ and $\tilde{\mathbf{z}}_t$ denote the
+resulting residuals.
+The ridge-penalized U-MIDAS estimator solves
+\begin{equation}
+\hat{\boldsymbol{\theta}}^{\text{ridge}}
+=
+\arg\min_{\boldsymbol{\theta}}
+\sum_{t=1}^{T}
+\left(
+\tilde{\Delta U}_t - \tilde{\mathbf{z}}_t' \boldsymbol{\theta}
+\right)^2
++
+\lambda \, \|\boldsymbol{\theta}\|_2^2,
+\end{equation}
+where $\boldsymbol{\theta}$ collects the coefficients on the weekly Google
+lags (and, when included, the autoregressive term), $\lambda \ge 0$ is the
+ridge penalty parameter, and $\|\cdot\|_2$ denotes the Euclidean norm.
+Analogously, the lasso-penalized U-MIDAS estimator is defined as
+\begin{equation}
+\hat{\boldsymbol{\theta}}^{\text{lasso}}
+=
+\arg\min_{\boldsymbol{\theta}}
+\sum_{t=1}^{T}
+\left(
+\tilde{\Delta U}_t - \tilde{\mathbf{z}}_t' \boldsymbol{\theta}
+\right)^2
++
+\lambda \, \|\boldsymbol{\theta}\|_1,
+\end{equation}
+where $\|\cdot\|_1$ denotes the $\ell_1$ norm. The lasso penalty encourages
+sparsity in $\boldsymbol{\theta}$ and can therefore select among individual
+weekly lags.
+The penalty parameter $\lambda$ is selected by time-series cross-validation
+within each expanding estimation window, using an expanding-fold scheme and
+minimizing mean squared prediction error.
+These penalized specifications are used as robustness checks to assess
+whether regularization of the high-dimensional weekly lag structure improves
+pseudo real-time nowcasting performance relative to the OLS U-MIDAS
+benchmark.
+
+
+\subsection{Appendix A 10: U-MIDAS robustness lag length}
+
+
+\begin{table}[ht]
+\centering
+\caption{U-MIDAS robustness to lag length $K$ (RMSE; ar1=1). Bold indicates best $K$ per keyword.}
+\label{tab:midas_K_robust}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Keyword} & \textbf{$K=4$} & \textbf{$K=6$} & \textbf{$K=8$} & \textbf{$K=10$} \\
+\midrule
+arbeitsamt & \textbf{0.1827} & 0.1868 & 0.1904 & 0.1924 \\
+bewerbung  & 0.1847 & \textbf{0.1822} & 0.1857 & 0.1853 \\
+indeed     & \textbf{0.1806} & 0.1837 & 0.1881 & 0.1942 \\
+jobbörse   & 0.1850 & 0.1744 & \textbf{0.1722} & 0.1728 \\
+stepstone  & 0.1840 & 0.1817 & \textbf{0.1745} & 0.1775 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+
+
+\newpage
+
+\bibliographystyle{plainnat} % or abbrvnat, econ-like style, etc.
+\bibliography{refs} % <-- refs.bib
+\end{document}
